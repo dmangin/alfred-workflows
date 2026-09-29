@@ -2,7 +2,8 @@
 // Follow — liens et tâches de suivi NotePlan depuis Slack et Gmail (Wavebox).
 //   slack-copy          lien du message Slack survolé -> presse-papier + active NotePlan
 //   slack-task <args>   tâche de suivi pour ce message  (keyword fs)
-//   mail-task <args>    tâche de suivi pour le mail/l'onglet courant (keyword fe, ⌥⇧T)
+//   mail-task <args>    tâche de suivi pour le mail/l'onglet courant, avec l'auteur de la
+//                       conversation Gmail (keyword fe, ⌥⇧T)
 // <args> = « <jours ouvrés> <priorité> <action> », tout optionnel : « 2 !!! voir XX ».
 // --dry-run : affiche le résultat sans presse-papier, activation ni ajout.
 'use strict';
@@ -29,6 +30,7 @@ function conf() {
     mailBrowser: env('gca_conf_gmail_app', 'Wavebox'),
     modeToday: env('gca_conf_mode_today', '1') === '1',
     inboxNote: env('gca_conf_inbox_note', '📥 Inbox'),
+    aliases: gmail.parseAliases(env('gca_conf_gmail_aliases', '')),
   };
 }
 
@@ -64,8 +66,9 @@ function run(argv) {
       case 'slack-task':
         return addTask(ui, c, rawArgs, '', slack.currentMessageLink('Wavebox'), dryRun);
       case 'mail-task': {
-        const { recipients, link } = gmail.currentTab(c.mailBrowser);
-        return addTask(ui, c, rawArgs, recipients, link, dryRun);
+        const { link, tab } = gmail.currentTab(c.mailBrowser);
+        const author = gmail.authorTag(gmail.threadAuthor(tab), c.aliases);
+        return addTask(ui, c, rawArgs, author, link, dryRun);
       }
       default:
         throw new UserError('Commande inconnue : « ' + cmd + ' » (slack-copy, slack-task, mail-task).');

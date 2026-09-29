@@ -61,10 +61,10 @@ eq('args « !! relancer »', parseFollowArgs('!! relancer'), { days: 0, prio: '!
 
 // --- ligne de tâche et URL NotePlan -----------------------------------------
 const line = followTaskLine({
-  prio: '!!!', action: 'Suivre', created: D(2026, 9, 28), recipients: '@ab',
+  prio: '!!!', action: 'Suivre', created: D(2026, 9, 28), recipients: '@xy',
   link: '[@: Budget  2027](https://mail.google.com/mail/u/0/#inbox/abc)',
 });
-eq('ligne complète', line, '- [ ] !!! 28/09/2026: Suivre @ab [@: Budget 2027](https://mail.google.com/mail/u/0/#inbox/abc)');
+eq('ligne complète', line, '- [ ] !!! 28/09/2026: Suivre @xy [@: Budget 2027](https://mail.google.com/mail/u/0/#inbox/abc)');
 eq('ligne sans priorité ni destinataires',
   followTaskLine({ prio: '', action: 'Suivre', created: D(2026, 9, 28), recipients: '', link: '[x](u)' }),
   '- [ ] 28/09/2026: Suivre [x](u)');
@@ -82,8 +82,8 @@ eq('cleanUrl label + compose',
   'https://mail.google.com/mail/u/0/#inbox/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG');
 eq('cleanUrl hors Gmail inchangée', gmail.cleanUrl('https://example.com/a'), 'https://example.com/a');
 eq('titre : Re:, destinataires, crochets',
-  gmail.splitAndCleanTitle('Re: [JIRA] point <|@ab @cd|> - moi@exemple.fr - Messagerie Exemple'),
-  { title: '{JIRA} point', recipients: '@ab @cd' });
+  gmail.splitAndCleanTitle('Re: [JIRA] point <|@xy @zz|> - moi@exemple.fr - Messagerie Exemple'),
+  { title: '{JIRA} point', recipients: '@xy @zz' });
 eq('titre : suffixe Gmail grand public',
   gmail.splitAndCleanTitle('Boîte de réception (12) - moi@gmail.com - Gmail'),
   { title: 'Boîte de réception (12)', recipients: '' });
@@ -91,6 +91,24 @@ eq('titre sans suffixe inchangé', gmail.splitAndCleanTitle('Budget - version 2'
 eq('describeTab page web',
   gmail.describeTab('https://example.com/a', 'Example'),
   { recipients: '', link: '[🌐 Example](https://example.com/a)' });
+
+// --- auteur des conversations Gmail -----------------------------------------
+const aliases = gmail.parseAliases(`# collègues
+alice.martin@exemple.fr = @alice
+  Bruno.Petit@Exemple.fr:bp
+
+ligne invalide
+chloe@exemple.fr = @chloe   # commentaire`);
+eq('table d\'alias : formats, casse, @ manquant, commentaires', aliases,
+  { 'alice.martin@exemple.fr': '@alice', 'bruno.petit@exemple.fr': '@bp', 'chloe@exemple.fr': '@chloe' });
+eq('table vide', gmail.parseAliases(''), {});
+eq('auteur dans la table (casse de l\'adresse ignorée)',
+  gmail.authorTag({ email: 'Alice.Martin@exemple.fr', name: 'Alice Martin' }, aliases), '@alice');
+eq('auteur inconnu -> @prénom_nom sans accents',
+  gmail.authorTag({ email: 'emilie@ailleurs.fr', name: 'Émilie Dupré-Lefèvre' }, aliases), '@emilie_dupre_lefevre');
+eq('auteur inconnu sans nom -> partie locale',
+  gmail.authorTag({ email: 'no-reply.service@ailleurs.fr', name: '' }, aliases), '@no_reply_service');
+eq('pas d\'auteur (hors conversation)', gmail.authorTag(null, aliases), '');
 
 // --- source Slack : buildMarkdown -------------------------------------------
 const U = (id) => 'https://exemple.slack.com/archives/' + id + '/p1';

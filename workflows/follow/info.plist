@@ -428,6 +428,27 @@ False : Tasks will be appended on the top of the special "Inbox" note</string>
 			<key>variable</key>
 			<string>gca_conf_gmail_account</string>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+				<key>verticalsize</key>
+				<integer>8</integer>
+			</dict>
+			<key>description</key>
+			<string>Une ligne par correspondant : « adresse = @alias ». Expéditeur absent : @prénom_nom.</string>
+			<key>label</key>
+			<string>Alias des expéditeurs</string>
+			<key>type</key>
+			<string>textarea</string>
+			<key>variable</key>
+			<string>gca_conf_gmail_aliases</string>
+		</dict>
 	</array>
 	<key>version</key>
 	<string>2.0.0</string>

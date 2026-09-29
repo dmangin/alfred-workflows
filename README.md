@@ -17,10 +17,15 @@ lib partagée et testée.
 | | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
 | *Gmail Searches* | `gmg` | recherches Gmail prédéfinies — workflow personnel sans code, hors dépôt |
 
-Tâche de suivi : `- [ ] !!! 28/09/2026: Suivre XX [@: titre](url)` — date de
+Tâche de suivi : `- [ ] !!! 28/09/2026: Suivre @auteur [@: titre](url)` — date de
 création, puis ajout dans la note du jour à **J+N jours ouvrés** (ou en tête de
 la note Inbox avec `>AAAA-MM-JJ`, selon la configuration du workflow Follow).
 Arguments tous optionnels : `fe` seul = aujourd'hui, action « Suivre ».
+
+**Auteur** (`fe`, `⌥⇧T`) : premier expéditeur de la conversation Gmail ouverte,
+lu dans la page. Son alias vient de la table `gca_conf_gmail_aliases`
+(`adresse = @alias`) ; un expéditeur absent de la table devient `@prénom_nom`
+(minuscules, sans accents). Hors conversation (liste, page web), pas d'auteur.
 
 **Jours ouvrés** : un samedi ou un dimanche compte comme le lundi suivant, puis
 on ajoute N jours ouvrés (samedi + 0 → lundi, samedi + 1 → mardi).
@@ -39,7 +44,7 @@ lib/                 code partagé, chargé par require('lib/…')
   noteplan.js        URL addText (note datée ou note Inbox)
   follow.js          parseur « <jours> <prio> <action> », ligne de tâche
   wavebox.js         onglets : recherche, activation, injection JS
-  sources/gmail.js   lien de l'onglet courant (nettoyage URL Gmail, destinataires)
+  sources/gmail.js   lien de l'onglet courant (nettoyage URL Gmail), auteur de la conversation
   sources/slack.js   capture du message Slack (DOM) et libellé markdown
 workflows/<nom>/     script d'entrée + snapshot info.plist/icône (make pull)
 tests/run.js         tests unitaires de lib/
@@ -62,6 +67,7 @@ Réglée dans Alfred (bouton « Configure Workflow… »), stockée dans le
 | `gca_conf_gmail_app` | Follow, Paste | navigateur à piloter (défaut `Wavebox`) |
 | `gca_conf_mode_today` | Follow | tâches dans la note du jour (défaut) ou dans une note Inbox |
 | `gca_conf_inbox_note` | Follow | titre de la note Inbox (défaut `📥 Inbox`) |
+| `gca_conf_gmail_aliases` | Follow | alias des expéditeurs, une ligne `adresse = @alias` par correspondant |
 
 ## Câblage Alfred
 

@@ -42,6 +42,23 @@ Le dossier `~/dev/utils/2607-slack-get-link` a ensuite été mis à la Corbeille
 - `fe` et `⌥⇧T` affichent une notification de confirmation.
 - Hyper+lettre sans onglet correspondant affiche une erreur au lieu de rien.
 
+## Auteur des conversations Gmail (29/09/2026)
+
+`fe` et `⌥⇧T` écrivent l'auteur de la conversation dans la tâche :
+`- [ ] jj/mm/aaaa: Suivre @auteur [@: sujet](url)`. Il remplace les
+destinataires `<|@xy @zz|>` que l'extension Wavebox « mail.google.com sender in
+title » ajoutait au titre : l'extension demandait un service worker et une
+table maintenue à part, et se déclenchait de façon peu fiable. Désormais le
+script lit la page au moment de l'action (injection JS).
+
+- **Auteur** = premier expéditeur : chaque message, replié ou déplié, porte un
+  `span.gD` avec les attributs `email` et `name`, dans l'ordre chronologique.
+- **Alias** : table `adresse = @alias` dans la configuration Alfred de Follow
+  (`gca_conf_gmail_aliases`, stockée dans le `prefs.plist` local, hors dépôt),
+  reprise de l'extension. Expéditeur inconnu : `@prénom_nom` en minuscules,
+  sans accents (choix : homogène avec les alias existants).
+- Le marqueur `<|…|>` reste retiré des sujets tant que l'extension est installée.
+
 ## Publication (28/09/2026)
 
 Avant d'ouvrir le dépôt au public : exemples réels remplacés par des données
