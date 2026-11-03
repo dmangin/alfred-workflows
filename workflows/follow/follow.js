@@ -2,13 +2,12 @@
 // Follow — liens et tâches de suivi NotePlan depuis l'onglet actif du navigateur
 // (Wavebox) : message Slack survolé, conversation Gmail ou page web.
 //   slack-copy          lien du message Slack survolé -> presse-papier + active NotePlan
-//   task <args>         tâche de suivi pour l'onglet actif (keyword fe ; ⌥⇧T avec --action)
+//   task <args>         tâche de suivi pour l'onglet actif  (keyword fe)
 //   status              recherche NotePlan sur l'onglet actif : déjà suivi ?  (keyword fes)
 //   waiting-open        ouvre la note d'attente  (keyword feg, Hyper+A)
 // <args> = « <jours ouvrés> <priorité> <action> », tout optionnel : « 2 !!! voir XX ».
 // Action vide ou commençant par le verbe par défaut (« Suivre ») : tâche en attente
 // de retour, en tête de la note d'attente ; sinon tâche d'action, dans la note du jour.
-// --action : toujours une tâche d'action.
 // --dry-run : affiche le résultat sans presse-papier, activation ni ajout.
 'use strict';
 
@@ -64,8 +63,8 @@ function confirmDuplicate(c, dup) {
 // Attente : en tête de la note d'attente (créée si absente), avec l'échéance
 // « >AAAA-MM-JJ », après confirmation si le message y est déjà en attente.
 // Action : dans la note du jour de l'échéance.
-function addTask(ui, c, { rawArgs, forceAction, recipients, link, key }, dryRun) {
-  const { waiting, days, prio, action } = planTask(rawArgs, { verb: c.verb, waitingDays: c.waitingDays, forceAction });
+function addTask(ui, c, { rawArgs, recipients, link, key }, dryRun) {
+  const { waiting, days, prio, action } = planTask(rawArgs, { verb: c.verb, waitingDays: c.waitingDays });
   const now = new Date();
   const due = addWorkingDays(now, days);
   const text = followTaskLine({ prio, action, created: now, recipients, link });
@@ -92,8 +91,7 @@ function addTask(ui, c, { rawArgs, forceAction, recipients, link, key }, dryRun)
 function run(argv) {
   return main('Follow', (ui) => {
     const dryRun = argv.includes('--dry-run');
-    const forceAction = argv.includes('--action');
-    const [cmd, rawArgs = ''] = argv.filter((a) => a !== '--dry-run' && a !== '--action');
+    const [cmd, rawArgs = ''] = argv.filter((a) => a !== '--dry-run');
     const c = conf();
 
     switch (cmd) {
@@ -106,7 +104,7 @@ function run(argv) {
         return link;
       }
       case 'task':
-        return addTask(ui, c, { rawArgs, forceAction, ...currentItem(c.browser, c.aliases) }, dryRun);
+        return addTask(ui, c, { rawArgs, ...currentItem(c.browser, c.aliases) }, dryRun);
       case 'status': {
         const { key } = currentItem(c.browser, c.aliases);
         if (!key) throw new UserError('Aucune conversation Gmail ouverte.');

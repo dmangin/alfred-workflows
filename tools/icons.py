@@ -116,7 +116,6 @@ TARGETS = {
     'follow': ('com.dmangin.follow', ['icon.png']),
     'fs': ('com.dmangin.follow', ['8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718.png']),  # hotkey ⌥⌘,
     'fe': ('com.dmangin.follow', ['BC4F345C-879E-409D-AF43-6D111E01C152.png',    # keyword fe
-                                  '9E840F4C-361A-445B-BC93-AFC2A948678F.png',    # hotkey ⌥⇧T
                                   '7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83.png',    # keyword fes
                                   '9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5.png',    # keyword feg
                                   'BC7D8E9F-2A3B-4C4D-8E5F-7A8B9CADBEC7.png']),  # hotkey Hyper+A

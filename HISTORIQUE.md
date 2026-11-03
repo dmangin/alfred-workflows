@@ -67,9 +67,9 @@ mail s'il est déjà suivi.
 | Sujet | Choix | Pourquoi |
 |---|---|---|
 | `fe`/`fs`, `fes`/`fss` | fusionnés en `fe` et `fes`, qui regardent l'onglet actif (idée de Damien) | deux keywords par canal, difficiles à retenir ; un onglet Slack sans message survolé est suivi comme une page |
-| ⌥⇧T | même détection que `fe` | cohérence : action du jour sur le message Slack survolé aussi |
 | Doublon | dialogue Créer quand même / Annuler au lieu d'une phrase dans la notification | la notification passait inaperçue ; puisqu'il faut cliquer, autant pouvoir annuler |
 | Accès à la note | `feg` et Hyper+`A` (« attente » ; Hyper+`W` est WhatsApp), dans Follow | c'est Follow qui connaît le titre de la note (sa configuration) |
+| ⌥⇧T | supprimé après usage | doublon de `fe <action>` (action du jour, avec un vrai verbe au lieu de « Suivre »), et jamais retenu |
 | Statut dans Alfred | abandonné, `fes` reste une recherche NotePlan | lister les résultats dans Alfred demanderait de lire toutes les notes du jour (28 s en AppleScript) ou un accès aux fichiers de NotePlan |
 | Doublons dans les notes du jour | abandonné | même coût ; après la migration, les tâches en attente sont toutes dans la note d'attente |
 | Ordre d'ajout | fin de la note du jour (journal), tête de la note d'attente (les plus récentes visibles) | l'ordre utile, par échéance, demanderait de réécrire la note ; NotePlan montre de toute façon chaque tâche le jour de son échéance |

@@ -47,19 +47,6 @@
 				<false/>
 			</dict>
 		</array>
-		<key>9E840F4C-361A-445B-BC93-AFC2A948678F</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>87E95242-DAEC-4871-874C-438901BB285D</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>BC4F345C-879E-409D-AF43-6D111E01C152</key>
 		<array>
 			<dict>
@@ -144,29 +131,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>0</integer>
-				<key>script</key>
-				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" task --action</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>87E95242-DAEC-4871-874C-438901BB285D</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>action</key>
 				<integer>0</integer>
 				<key>argument</key>
@@ -242,42 +206,6 @@
 			<string>9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5</string>
 			<key>version</key>
 			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>action</key>
-				<integer>0</integer>
-				<key>argument</key>
-				<integer>1</integer>
-				<key>focusedappvariable</key>
-				<false/>
-				<key>focusedappvariablename</key>
-				<string></string>
-				<key>hotkey</key>
-				<integer>17</integer>
-				<key>hotmod</key>
-				<integer>655360</integer>
-				<key>hotstring</key>
-				<string>T</string>
-				<key>leftcursor</key>
-				<false/>
-				<key>modsmode</key>
-				<integer>0</integer>
-				<key>relatedApps</key>
-				<array>
-					<string>com.google.Chrome</string>
-					<string>com.bookry.wavebox</string>
-				</array>
-				<key>relatedAppsMode</key>
-				<integer>1</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.hotkey</string>
-			<key>uid</key>
-			<string>9E840F4C-361A-445B-BC93-AFC2A948678F</string>
-			<key>version</key>
-			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -383,7 +311,7 @@
 ⌥⌘, : lien du message Slack survolé -&gt; presse-papier + active NotePlan (Cmd+V manuel).
 fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », en tête de la note d'attente, échéance &gt;J+N
 (délai par défaut configurable) ; autre action : note du jour J+N (aujourd'hui par défaut).
-⌥⇧T : tâche d'action du jour. fes : recherche NotePlan sur l'onglet. feg, Hyper+A : ouvre la note d'attente.
+fes : recherche NotePlan sur l'onglet. feg, Hyper+A : ouvre la note d'attente.
 Jours ouvrés : un samedi/dimanche compte comme le lundi suivant.
 
 Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (repo 2609-alfred-jxa).</string>
@@ -401,13 +329,6 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>xpos</key>
 			<real>30.0</real>
 			<key>ypos</key>
-			<real>390.0</real>
-		</dict>
-		<key>87E95242-DAEC-4871-874C-438901BB285D</key>
-		<dict>
-			<key>xpos</key>
-			<real>230.0</real>
-			<key>ypos</key>
 			<real>270.0</real>
 		</dict>
 		<key>8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718</key>
@@ -422,28 +343,21 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>xpos</key>
 			<real>230.0</real>
 			<key>ypos</key>
-			<real>390.0</real>
+			<real>270.0</real>
 		</dict>
 		<key>9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5</key>
 		<dict>
 			<key>xpos</key>
 			<real>30.0</real>
 			<key>ypos</key>
-			<real>510.0</real>
-		</dict>
-		<key>9E840F4C-361A-445B-BC93-AFC2A948678F</key>
-		<dict>
-			<key>xpos</key>
-			<real>30.0</real>
-			<key>ypos</key>
-			<real>270.0</real>
+			<real>390.0</real>
 		</dict>
 		<key>AB6C7D8E-1F2A-4B3C-9D4E-6F7A8B9CADB6</key>
 		<dict>
 			<key>xpos</key>
 			<real>230.0</real>
 			<key>ypos</key>
-			<real>510.0</real>
+			<real>390.0</real>
 		</dict>
 		<key>BC4F345C-879E-409D-AF43-6D111E01C152</key>
 		<dict>
@@ -457,7 +371,7 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>xpos</key>
 			<real>30.0</real>
 			<key>ypos</key>
-			<real>630.0</real>
+			<real>510.0</real>
 		</dict>
 		<key>D4E5F6A7-B8C9-4D0E-9F1A-2B3C4D5E6F70</key>
 		<dict>

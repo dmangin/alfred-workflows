@@ -72,16 +72,15 @@ eq('args « !! relancer »', parseFollowArgs('!! relancer'), { days: null, prio:
 eq('isWaiting verbe configuré accentué', isWaiting('ÉCOUTER la réponse', 'écouter'), true);
 eq('isWaiting verbe avec caractères spéciaux', isWaiting('(att) x', '(att)'), true);
 
-const P = (args, forceAction) => planTask(args, { verb: 'Suivre', waitingDays: 2, forceAction });
+const P = (args) => planTask(args, { verb: 'Suivre', waitingDays: 2 });
 [
-  ['fe -> attente, délai par défaut', '', false, { waiting: true, days: 2, prio: '', action: 'Suivre' }],
-  ['fe 0 -> attente J+0', '0', false, { waiting: true, days: 0, prio: '', action: 'Suivre' }],
-  ['fe !!! -> attente, délai par défaut', '!!!', false, { waiting: true, days: 2, prio: '!!!', action: 'Suivre' }],
-  ['fe 3 suivre devis -> attente J+3', '3 suivre devis', false, { waiting: true, days: 3, prio: '', action: 'suivre devis' }],
-  ['fe relancer -> action J+0', 'relancer Bob', false, { waiting: false, days: 0, prio: '', action: 'relancer Bob' }],
-  ['fe 2 !!! répondre -> action J+2', '2 !!! répondre', false, { waiting: false, days: 2, prio: '!!!', action: 'répondre' }],
-  ['⌥⇧T -> action J+0', '', true, { waiting: false, days: 0, prio: '', action: 'Suivre' }],
-].forEach(([name, args, force, exp]) => eq('planTask ' + name, P(args, force), exp));
+  ['fe -> attente, délai par défaut', '', { waiting: true, days: 2, prio: '', action: 'Suivre' }],
+  ['fe 0 -> attente J+0', '0', { waiting: true, days: 0, prio: '', action: 'Suivre' }],
+  ['fe !!! -> attente, délai par défaut', '!!!', { waiting: true, days: 2, prio: '!!!', action: 'Suivre' }],
+  ['fe 3 suivre devis -> attente J+3', '3 suivre devis', { waiting: true, days: 3, prio: '', action: 'suivre devis' }],
+  ['fe relancer -> action J+0', 'relancer Bob', { waiting: false, days: 0, prio: '', action: 'relancer Bob' }],
+  ['fe 2 !!! répondre -> action J+2', '2 !!! répondre', { waiting: false, days: 2, prio: '!!!', action: 'répondre' }],
+].forEach(([name, args, exp]) => eq('planTask ' + name, P(args), exp));
 
 // --- ligne de tâche et URL NotePlan -----------------------------------------
 const line = followTaskLine({

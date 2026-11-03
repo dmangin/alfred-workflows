@@ -4,13 +4,14 @@ Monorepo des workflows Alfred écrits en JXA (JavaScript for Automation) :
 pilotage de Wavebox (Gmail, Slack…) et tâches de suivi dans NotePlan, avec une
 lib partagée et testée.
 
+Décisions en attente : [TODO.md](TODO.md).
+
 ## Workflows
 
 | Workflow | Déclencheurs | Effet |
 |---|---|---|
 | **Follow** | `⌥⌘,` (dans Wavebox) | lien markdown du message Slack survolé (ou sélectionné au clavier) → presse-papier, active NotePlan ; `Cmd+V` manuel |
 | | `fe <jours> <prio> <action>` | tâche de suivi pour l'onglet actif : message Slack survolé, conversation Gmail ou page |
-| | `⌥⇧T` (Wavebox/Chrome) | tâche d'action du jour pour l'onglet actif |
 | | `fes` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
 | | `feg`, Hyper+`A` | ouvre la note d'attente |
 | **Wavebox Tabs** | Hyper+`M`/`S`/`W`/`C`, Hyper+`N` | onglet Gmail/Slack/WhatsApp/Agenda (onglet suivant du même service s'il est déjà actif), NotePlan |
@@ -24,7 +25,7 @@ création, priorité et action optionnelles. Deux destinations, selon l'action :
 | Action | Type | Destination | Échéance sans nombre de jours |
 |---|---|---|---|
 | vide ou commençant par le mot « Suivre » (`fe`, `fe 3 suivre devis`) | en attente de retour | en tête de la note d'attente, `… >AAAA-MM-JJ` | délai d'attente (2 jours ouvrés) |
-| toute autre (`fe relancer Bob`), ou `⌥⇧T` | action | note du jour à J+N | aujourd'hui |
+| toute autre (`fe relancer Bob`) | action | note du jour à J+N | aujourd'hui |
 
 **Onglet actif** : un onglet Slack avec un message survolé (ou sélectionné au
 clavier) donne le lien de ce message ; une conversation Gmail ouverte, son lien
@@ -40,7 +41,7 @@ soient le libellé et le compte `u/N` de l'URL), l'identifiant du message Slack
 `fes` cherche dans NotePlan. Une URL n'est reconnue qu'à l'identique
 (`…/a` ne trouve ni `…/abc` ni `…/a/b`) ; une liste Gmail n'identifie rien.
 
-**Auteur** (`fe`, `⌥⇧T`) : premier expéditeur de la conversation Gmail ouverte,
+**Auteur** (`fe`) : premier expéditeur de la conversation Gmail ouverte,
 lu dans la page. Son alias vient de la table `gca_conf_gmail_aliases`
 (`adresse = @alias`) ; un expéditeur absent de la table devient `@prénom_nom`
 (minuscules, sans accents). Hors conversation (liste, page web), pas d'auteur.
@@ -107,8 +108,8 @@ absolu** : modifier un `.js` agit immédiatement, sans réimport.
 `make pull` les recopie ici. Les icônes de Wavebox et NotePlan sont extraites des
 applications installées ; Slack, Gmail, WhatsApp, Agenda et le presse-papier
 de Paste sont des glyphes SVG dessinés dans le script. Une icône propre à un
-objet Alfred (ici `⌥⌘,` en Slack → NotePlan ; `fe`, `⌥⇧T`, `fes`, `feg` et
-Hyper+`A` en Wavebox → NotePlan) est un fichier `<UID>.png` dans le
+objet Alfred (ici `⌥⌘,` en Slack → NotePlan ; `fe`, `fes`, `feg` et Hyper+`A`
+en Wavebox → NotePlan) est un fichier `<UID>.png` dans le
 dossier du workflow. `tools/icons.py preview <dossier>` produit un aperçu sans
 toucher à Alfred.
 
