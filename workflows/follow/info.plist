@@ -8,11 +8,37 @@
 	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
+		<key>7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>8F4A5B6C-9D0E-4F1A-8B2C-4D5E6F7A8B94</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
 				<string>D4E5F6A7-B8C9-4D0E-9F1A-2B3C4D5E6F70</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>AB6C7D8E-1F2A-4B3C-9D4E-6F7A8B9CADB6</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -47,11 +73,11 @@
 				<false/>
 			</dict>
 		</array>
-		<key>D4D7844D-A642-481E-BEE4-D032AD254C27</key>
+		<key>BC7D8E9F-2A3B-4C4D-8E5F-7A8B9CADBEC7</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>A7C1E2F3-4B5D-4E6F-8A9B-0C1D2E3F4A5B</string>
+				<string>AB6C7D8E-1F2A-4B3C-9D4E-6F7A8B9CADB6</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -79,7 +105,7 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" mail-task "$1"</string>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" task "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -97,12 +123,33 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>fes</string>
+				<key>subtext</key>
+				<string>Recherche dans NotePlan le message Slack survolé, le mail ou la page</string>
+				<key>text</key>
+				<string>Follow Status</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" mail-task 0</string>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" task --action</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -155,6 +202,50 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" status</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>8F4A5B6C-9D0E-4F1A-8B2C-4D5E6F7A8B94</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>feg</string>
+				<key>subtext</key>
+				<string>Ouvre la note d’attente dans NotePlan</string>
+				<key>text</key>
+				<string>Follow : en attente</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>action</key>
 				<integer>0</integer>
 				<key>argument</key>
@@ -196,7 +287,7 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" slack-task "$1"</string>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" waiting-open</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -207,7 +298,7 @@
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>A7C1E2F3-4B5D-4E6F-8A9B-0C1D2E3F4A5B</string>
+			<string>AB6C7D8E-1F2A-4B3C-9D4E-6F7A8B9CADB6</string>
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
@@ -219,9 +310,9 @@
 				<key>keyword</key>
 				<string>fe</string>
 				<key>subtext</key>
-				<string>arg=&lt;days from now&gt; &lt;priority&gt; &lt;action&gt;, ex "fe 2 !!! voir XX"</string>
+				<string>fe &lt;jours&gt; &lt;priorité&gt; &lt;action&gt; — message Slack survolé, mail ou page ; sans action ou « Suivre … » : note d’attente, sinon note du jour</string>
 				<key>text</key>
-				<string>Follow Email</string>
+				<string>Follow</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -235,23 +326,33 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>keyword</key>
-				<string>fs</string>
-				<key>subtext</key>
-				<string>fs &lt;jours&gt; &lt;priorité&gt; &lt;action&gt;, ex « fs 2 !!! répondre » — tout optionnel</string>
-				<key>text</key>
-				<string>Follow Slack</string>
-				<key>withspace</key>
-				<true/>
+				<key>action</key>
+				<integer>0</integer>
+				<key>argument</key>
+				<integer>0</integer>
+				<key>focusedappvariable</key>
+				<false/>
+				<key>focusedappvariablename</key>
+				<string></string>
+				<key>hotkey</key>
+				<integer>12</integer>
+				<key>hotmod</key>
+				<integer>1966080</integer>
+				<key>hotstring</key>
+				<string>A</string>
+				<key>leftcursor</key>
+				<false/>
+				<key>modsmode</key>
+				<integer>0</integer>
+				<key>relatedAppsMode</key>
+				<integer>0</integer>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
+			<string>alfred.workflow.trigger.hotkey</string>
 			<key>uid</key>
-			<string>D4D7844D-A642-481E-BEE4-D032AD254C27</string>
+			<string>BC7D8E9F-2A3B-4C4D-8E5F-7A8B9CADBEC7</string>
 			<key>version</key>
-			<integer>1</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -278,9 +379,11 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>⌥⌘, : lien du message Slack survolé -&gt; presse-papier + active NotePlan (Cmd+V manuel).
-fs &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : tâche de suivi pour ce message Slack.
-⌥⇧T : tâche de suivi du jour pour le mail courant ; fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : idem à J+N.
+	<string>Follow suit l'onglet actif de Wavebox : le message Slack survolé, sinon la conversation Gmail ouverte, sinon la page.
+⌥⌘, : lien du message Slack survolé -&gt; presse-papier + active NotePlan (Cmd+V manuel).
+fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », en tête de la note d'attente, échéance &gt;J+N
+(délai par défaut configurable) ; autre action : note du jour J+N (aujourd'hui par défaut).
+⌥⇧T : tâche d'action du jour. fes : recherche NotePlan sur l'onglet. feg, Hyper+A : ouvre la note d'attente.
 Jours ouvrés : un samedi/dimanche compte comme le lundi suivant.
 
 Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (repo 2609-alfred-jxa).</string>
@@ -289,58 +392,79 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 		<key>4BE1B11E-EEA8-46BD-A8AF-9CDA9A18C6F9</key>
 		<dict>
 			<key>xpos</key>
-			<integer>230</integer>
+			<real>230.0</real>
 			<key>ypos</key>
-			<integer>390</integer>
+			<real>150.0</real>
+		</dict>
+		<key>7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83</key>
+		<dict>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>390.0</real>
 		</dict>
 		<key>87E95242-DAEC-4871-874C-438901BB285D</key>
 		<dict>
 			<key>xpos</key>
-			<integer>230</integer>
+			<real>230.0</real>
 			<key>ypos</key>
-			<integer>270</integer>
+			<real>270.0</real>
 		</dict>
 		<key>8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718</key>
 		<dict>
 			<key>xpos</key>
-			<integer>30</integer>
+			<real>30.0</real>
 			<key>ypos</key>
-			<integer>30</integer>
+			<real>30.0</real>
+		</dict>
+		<key>8F4A5B6C-9D0E-4F1A-8B2C-4D5E6F7A8B94</key>
+		<dict>
+			<key>xpos</key>
+			<real>230.0</real>
+			<key>ypos</key>
+			<real>390.0</real>
+		</dict>
+		<key>9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5</key>
+		<dict>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>510.0</real>
 		</dict>
 		<key>9E840F4C-361A-445B-BC93-AFC2A948678F</key>
 		<dict>
 			<key>xpos</key>
-			<integer>30</integer>
+			<real>30.0</real>
 			<key>ypos</key>
-			<integer>270</integer>
+			<real>270.0</real>
 		</dict>
-		<key>A7C1E2F3-4B5D-4E6F-8A9B-0C1D2E3F4A5B</key>
+		<key>AB6C7D8E-1F2A-4B3C-9D4E-6F7A8B9CADB6</key>
 		<dict>
 			<key>xpos</key>
-			<integer>230</integer>
+			<real>230.0</real>
 			<key>ypos</key>
-			<integer>150</integer>
+			<real>510.0</real>
 		</dict>
 		<key>BC4F345C-879E-409D-AF43-6D111E01C152</key>
 		<dict>
 			<key>xpos</key>
-			<integer>30</integer>
+			<real>30.0</real>
 			<key>ypos</key>
-			<integer>390</integer>
+			<real>150.0</real>
 		</dict>
-		<key>D4D7844D-A642-481E-BEE4-D032AD254C27</key>
+		<key>BC7D8E9F-2A3B-4C4D-8E5F-7A8B9CADBEC7</key>
 		<dict>
 			<key>xpos</key>
-			<integer>30</integer>
+			<real>30.0</real>
 			<key>ypos</key>
-			<integer>150</integer>
+			<real>630.0</real>
 		</dict>
 		<key>D4E5F6A7-B8C9-4D0E-9F1A-2B3C4D5E6F70</key>
 		<dict>
 			<key>xpos</key>
-			<integer>230</integer>
+			<real>230.0</real>
 			<key>ypos</key>
-			<integer>30</integer>
+			<real>30.0</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
@@ -370,27 +494,7 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<true/>
-				<key>required</key>
-				<false/>
-				<key>text</key>
-				<string>Add task to today's note (VS a special note)</string>
-			</dict>
-			<key>description</key>
-			<string>True (default) : Noteplan Tasks created from gmail will be appended to the daily note
-False : Tasks will be appended on the top of the special "Inbox" note</string>
-			<key>label</key>
-			<string>Append to daily note?</string>
-			<key>type</key>
-			<string>checkbox</string>
-			<key>variable</key>
-			<string>gca_conf_mode_today</string>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>default</key>
-				<string>📥 Inbox</string>
+				<string>En attente de retour</string>
 				<key>placeholder</key>
 				<string></string>
 				<key>required</key>
@@ -399,13 +503,55 @@ False : Tasks will be appended on the top of the special "Inbox" note</string>
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>The name of the special note in which append the task, if modeToday = false</string>
+			<string>Titre de la note où vont les tâches en attente de retour (tous canaux), en tête avec &gt;AAAA-MM-JJ. Créée si absente.</string>
 			<key>label</key>
-			<string>Inbox note's name</string>
+			<string>Note d’attente</string>
 			<key>type</key>
 			<string>textfield</string>
 			<key>variable</key>
-			<string>gca_conf_inbox_note</string>
+			<string>gca_conf_waiting_note</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>Suivre</string>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Verbe par défaut des tâches. Action vide ou commençant par ce mot : tâche en attente ; sinon tâche d’action, dans la note du jour.</string>
+			<key>label</key>
+			<string>Verbe d’attente</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>gca_conf_waiting_verb</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>2</string>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Jours ouvrés par défaut d’une tâche en attente sans nombre de jours (une tâche d’action est pour aujourd’hui).</string>
+			<key>label</key>
+			<string>Délai d’attente</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>gca_conf_waiting_days</string>
 		</dict>
 		<dict>
 			<key>config</key>

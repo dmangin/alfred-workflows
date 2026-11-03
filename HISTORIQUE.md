@@ -42,6 +42,71 @@ Le dossier `~/dev/utils/2607-slack-get-link` a ensuite été mis à la Corbeille
 - `fe` et `⌥⇧T` affichent une notification de confirmation.
 - Hyper+lettre sans onglet correspondant affiche une erreur au lieu de rien.
 
+## Attente de retour et statut (03/11/2026)
+
+**Besoin** : séparer les mails et messages Slack pour lesquels on attend
+seulement une réponse de ceux sur lesquels il faut agir, et savoir depuis un
+mail s'il est déjà suivi.
+
+**Choix validés** :
+
+| Sujet | Choix | Pourquoi |
+|---|---|---|
+| Aiguillage | selon l'action : vide ou commençant par le verbe par défaut (« Suivre », mot entier, casse ignorée) → note d'attente ; sinon → note du jour | pas de nouveaux keywords (`fed`, `fsd`… doubleraient les commandes à chaque canal) ; `fe 3 suivre devis` garde un commentaire |
+| Note d'attente | une seule, tous canaux, configurable, ajout en tête avec `>AAAA-MM-JJ` | reprend le format de l'ancien mode Inbox ; NotePlan montre la tâche dans la note du jour de l'échéance |
+| Délais par défaut | attente : configurable (2 jours ouvrés) ; action : aujourd'hui | une attente à J+0 est en retard tout de suite ; une action tapée sans délai est urgente |
+| ⌥⇧T | toujours une action du jour (`--action`) | usage « à traiter aujourd'hui » |
+| Verbe | configurable (`gca_conf_waiting_verb`) | il sert à la fois de texte par défaut et de marqueur d'attente |
+| Mode Inbox | retiré (`gca_conf_mode_today`, `gca_conf_inbox_note`) | l'interrupteur global devient inutile une fois l'aiguillage fait tâche par tâche ; il n'était pas utilisé |
+| Statut | `fes`/`fss` ouvrent la recherche NotePlan sur l'identifiant du message | le plus simple, couvre toutes les notes (du jour comprises) et montre les tâches faites. Écarté : un libellé ou une étoile Gmail (pilotage fragile des menus, et il resterait une fois la tâche faite) |
+| Doublons | avertir et créer, sur la note d'attente seulement | une relance reste possible ; une seule note à lire |
+| Identifiant | jeton de conversation Gmail, `p…` du message Slack, sinon URL complète de la page (suggestion de Damien) | `fe`/`fes` marchent sur tout onglet ; pour Gmail, l'URL dépend du compte `u/N`, pas le jeton. Correspondance exacte (clé suivie de `) ? & #` ou d'une espace) ; la recherche NotePlan accepte une URL complète (vérifié avec `? & = #`) |
+
+**Après les premiers essais** (même jour) :
+
+| Sujet | Choix | Pourquoi |
+|---|---|---|
+| `fe`/`fs`, `fes`/`fss` | fusionnés en `fe` et `fes`, qui regardent l'onglet actif (idée de Damien) | deux keywords par canal, difficiles à retenir ; un onglet Slack sans message survolé est suivi comme une page |
+| ⌥⇧T | même détection que `fe` | cohérence : action du jour sur le message Slack survolé aussi |
+| Doublon | dialogue Créer quand même / Annuler au lieu d'une phrase dans la notification | la notification passait inaperçue ; puisqu'il faut cliquer, autant pouvoir annuler |
+| Accès à la note | `feg` et Hyper+`A` (« attente » ; Hyper+`W` est WhatsApp), dans Follow | c'est Follow qui connaît le titre de la note (sa configuration) |
+| Statut dans Alfred | abandonné, `fes` reste une recherche NotePlan | lister les résultats dans Alfred demanderait de lire toutes les notes du jour (28 s en AppleScript) ou un accès aux fichiers de NotePlan |
+| Doublons dans les notes du jour | abandonné | même coût ; après la migration, les tâches en attente sont toutes dans la note d'attente |
+| Ordre d'ajout | fin de la note du jour (journal), tête de la note d'attente (les plus récentes visibles) | l'ordre utile, par échéance, demanderait de réécrire la note ; NotePlan montre de toute façon chaque tâche le jour de son échéance |
+
+**Migration (03/11/2026)** : les tâches « Suivre » encore ouvertes des notes du
+jour ont été déplacées une fois pour toutes vers la note d'attente, par un
+script ponctuel (hors dépôt, archivé avec la sauvegarde des notes) :
+aperçu validé par Damien, puis ajout en fin de note d'attente (échéance la
+plus récente d'abord ; échéance = `>date` de la ligne, sinon date de la note
+du jour), puis retrait des notes du jour. Résultat : 115 tâches déplacées,
+5 relances retirées (pour un même mail, on garde l'échéance la plus récente,
+puis la création la plus récente), 1 tâche laissée en place (« Suivre » pas
+en tête), 66 notes du jour modifiées, toutes les autres inchangées (vérifié
+par un nouveau scan). Ordre retenu pour ne rien perdre : vérifier toutes les
+notes, écrire la note d'attente, puis seulement retirer les lignes.
+
+Piège rencontré : `osascript -e '…' <arguments>` prend pour une option un
+argument qui commence par « - » (une note dont la première ligne est une
+tâche) — passer en premier un argument qui n'en commence pas.
+
+**URL scheme ou AppleScript** : toutes les écritures et la recherche passent
+par l'URL scheme, comme la note du jour (choix de Damien : la simplicité).
+AppleScript ne sert qu'à **lire** la note d'attente, ce qu'une URL ne sait pas
+faire : savoir si elle existe et y chercher un doublon, en une seule lecture.
+
+**Constats NotePlan (3.22)** :
+- `addText?noteTitle=…` sur une note absente ne fait rien, sans erreur : la
+  note d'attente est créée avec la tâche par `addNote?noteTitle=…&text=…`.
+  `mode=prepend` insère sous le titre.
+- Un `addText` lancé une seconde après la création d'une note peut se perdre
+  (indexation) ; sans conséquence ici, deux ajouts étant espacés.
+- Le dictionnaire AppleScript (`readNote`, `insertContent`, `findNotes`…)
+  fonctionne depuis `osascript -e`, mais JXA répond « message
+  incompréhensible » (-1708) : `lib/noteplan.js` passe par `NSAppleScript`.
+- `findNotes` ignore les notes du jour : inutilisable pour un statut complet,
+  d'où la recherche de l'app (`search?text=…`).
+
 ## Auteur des conversations Gmail (29/09/2026)
 
 `fe` et `⌥⇧T` écrivent l'auteur de la conversation dans la tâche :

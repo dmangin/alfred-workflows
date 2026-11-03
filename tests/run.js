@@ -15,10 +15,10 @@ const require = (() => {
 })();
 
 const dates = require('lib/dates');
-const { addTextUrl } = require('lib/noteplan');
-const { parseFollowArgs, followTaskLine } = require('lib/follow');
+const noteplan = require('lib/noteplan');
+const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask } = require('lib/follow');
 const gmail = require('lib/sources/gmail');
-const { buildMarkdown } = require('lib/sources/slack');
+const { buildMarkdown, messageKey } = require('lib/sources/slack');
 
 let passed = 0;
 const failures = [];
@@ -51,13 +51,37 @@ const wd = (from, n) => dates.frDate(dates.addWorkingDays(from, n));
 eq('npDate à 00:30 locale (pas de décalage UTC)', dates.npDate(D(2026, 9, 29, 0, 30)), '20260929');
 eq('isoDate', dates.isoDate(D(2026, 1, 5)), '2026-01-05');
 
-// --- parseur fe / fs ---------------------------------------------------------
-eq('args vides', parseFollowArgs(''), { days: 0, prio: '', action: 'Suivre' });
-eq('args « 0 » (⌥⇧T)', parseFollowArgs('0'), { days: 0, prio: '', action: 'Suivre' });
-eq('args « 2 »', parseFollowArgs('2'), { days: 2, prio: '', action: 'Suivre' });
-eq('args « 2 !!! »', parseFollowArgs('2 !!!'), { days: 2, prio: '!!!', action: 'Suivre' });
+// --- parseur fe -------------------------------------------------------------
+eq('args vides', parseFollowArgs(''), { days: null, prio: '', action: '' });
+eq('args « 0 »', parseFollowArgs('0'), { days: 0, prio: '', action: '' });
+eq('args « 2 »', parseFollowArgs('2'), { days: 2, prio: '', action: '' });
+eq('args « 2 !!! »', parseFollowArgs('2 !!!'), { days: 2, prio: '!!!', action: '' });
 eq('args « 2 !!! voir XX »', parseFollowArgs('2 !!! voir XX'), { days: 2, prio: '!!!', action: 'voir XX' });
-eq('args « !! relancer »', parseFollowArgs('!! relancer'), { days: 0, prio: '!!', action: 'relancer' });
+eq('args « !! relancer »', parseFollowArgs('!! relancer'), { days: null, prio: '!!', action: 'relancer' });
+
+// --- aiguillage attente / action ---------------------------------------------
+[
+  ['action vide', '', true],
+  ['verbe seul', 'Suivre', true],
+  ['verbe, casse ignorée', 'suivre devis Bob', true],
+  ['verbe en mot entier seulement', 'suivi devis', false],
+  ['verbe collé', 'Suivrez', false],
+  ['autre action', 'relancer Bob', false],
+  ['verbe pas en tête', 'relancer et suivre', false],
+].forEach(([name, action, exp]) => eq('isWaiting ' + name, isWaiting(action, 'Suivre'), exp));
+eq('isWaiting verbe configuré accentué', isWaiting('ÉCOUTER la réponse', 'écouter'), true);
+eq('isWaiting verbe avec caractères spéciaux', isWaiting('(att) x', '(att)'), true);
+
+const P = (args, forceAction) => planTask(args, { verb: 'Suivre', waitingDays: 2, forceAction });
+[
+  ['fe -> attente, délai par défaut', '', false, { waiting: true, days: 2, prio: '', action: 'Suivre' }],
+  ['fe 0 -> attente J+0', '0', false, { waiting: true, days: 0, prio: '', action: 'Suivre' }],
+  ['fe !!! -> attente, délai par défaut', '!!!', false, { waiting: true, days: 2, prio: '!!!', action: 'Suivre' }],
+  ['fe 3 suivre devis -> attente J+3', '3 suivre devis', false, { waiting: true, days: 3, prio: '', action: 'suivre devis' }],
+  ['fe relancer -> action J+0', 'relancer Bob', false, { waiting: false, days: 0, prio: '', action: 'relancer Bob' }],
+  ['fe 2 !!! répondre -> action J+2', '2 !!! répondre', false, { waiting: false, days: 2, prio: '!!!', action: 'répondre' }],
+  ['⌥⇧T -> action J+0', '', true, { waiting: false, days: 0, prio: '', action: 'Suivre' }],
+].forEach(([name, args, force, exp]) => eq('planTask ' + name, P(args, force), exp));
 
 // --- ligne de tâche et URL NotePlan -----------------------------------------
 const line = followTaskLine({
@@ -69,17 +93,55 @@ eq('ligne sans priorité ni destinataires',
   followTaskLine({ prio: '', action: 'Suivre', created: D(2026, 9, 28), recipients: '', link: '[x](u)' }),
   '- [ ] 28/09/2026: Suivre [x](u)');
 
-const today = addTextUrl({ date: D(2026, 10, 1), text: '- [ ] a b', inboxNote: '' });
-eq('URL note du jour', today, 'noteplan://x-callback-url/addText?noteDate=20261001&openNote=yes&text=-%20%5B%20%5D%20a%20b');
-const inbox = addTextUrl({ date: D(2026, 10, 1), text: '- [ ] a', inboxNote: '📥 Inbox' });
-eq('URL Inbox : note', decodeURIComponent(inbox.split('noteTitle=')[1].split('&')[0]), '📥 Inbox');
-eq('URL Inbox : texte + échéance', decodeURIComponent(inbox.split('&text=')[1]), '- [ ] a >2026-10-01');
-eq('URL Inbox : prepend', /&mode=prepend&/.test(inbox), true);
+eq('URL note du jour', noteplan.addTextUrl({ date: D(2026, 10, 1), text: '- [ ] a b' }),
+  'noteplan://x-callback-url/addText?noteDate=20261001&openNote=yes&text=-%20%5B%20%5D%20a%20b');
+eq('URL ajout en tête', noteplan.prependUrl({ title: 'En attente', text: '- [ ] a >2026-10-01' }),
+  'noteplan://x-callback-url/addText?noteTitle=En%20attente&openNote=yes&mode=prepend&text=-%20%5B%20%5D%20a%20%3E2026-10-01');
+eq('URL création de note', noteplan.addNoteUrl({ title: 'En attente', text: '- [ ] a' }),
+  'noteplan://x-callback-url/addNote?noteTitle=En%20attente&openNote=yes&text=-%20%5B%20%5D%20a');
+eq('URL ouverture de note', noteplan.openNoteUrl('En attente'), 'noteplan://x-callback-url/openNote?noteTitle=En%20attente');
+eq('URL recherche', noteplan.searchUrl('FMfcgzAAAA'), 'noteplan://x-callback-url/search?text=FMfcgzAAAA');
+eq('tâche planifiée', noteplan.scheduled('- [ ] a', D(2026, 10, 1)), '- [ ] a >2026-10-01');
+eq('chaîne AppleScript : guillemets et antislash', noteplan.quote('a "b" c\\d'), '"a \\"b\\" c\\\\d"');
+
+// --- doublons dans la note d'attente ----------------------------------------
+const note = `# En attente de retour
+- [x] 01/10/2026: Suivre [@: fini](https://mail.google.com/mail/u/0/#inbox/KEYDONE0000000000) >2026-10-03
+- [ ] 02/10/2026: Suivre @bob [@: devis](https://mail.google.com/mail/u/0/#inbox/KEYOPEN0000000000) >2026-10-06
+* [ ] Suivre sans date KEYSTAR0000000000`;
+eq('doublon : tâche ouverte', findOpenTask(note, 'KEYOPEN0000000000'), { created: '02/10/2026' });
+eq('doublon : tâche faite ignorée', findOpenTask(note, 'KEYDONE0000000000'), null);
+eq('doublon : marqueur *, sans date', findOpenTask(note, 'KEYSTAR0000000000'), { created: '' });
+const web = `- [ ] 03/11/2026: Suivre [🌐 Ticket](https://exemple.test/browse/ABC-12) >2026-11-05
+- [ ] 03/11/2026: Suivre [🌐 Vue](https://exemple.test/view?id=2&x=1) >2026-11-05
+- [ ] 03/11/2026: Suivre [#️⃣ #dev](https://exemple.slack.com/archives/C01/p1700000000999999?thread_ts=1700000000.123456&cid=C01) >2026-11-05`;
+eq('doublon : URL de page exacte', findOpenTask(web, 'https://exemple.test/browse/ABC-12'), { created: '03/11/2026' });
+eq('doublon : URL préfixe d\'une autre (…/ABC-1)', findOpenTask(web, 'https://exemple.test/browse/ABC-1'), null);
+eq('doublon : URL parente (…/browse)', findOpenTask(web, 'https://exemple.test/browse'), null);
+eq('doublon : URL avec paramètres', findOpenTask(web, 'https://exemple.test/view?id=2&x=1'), { created: '03/11/2026' });
+eq('doublon : autre valeur de paramètre', findOpenTask(web, 'https://exemple.test/view?id=20'), null);
+eq('doublon : réponse de fil Slack', findOpenTask(web, 'p1700000000999999'), { created: '03/11/2026' });
+eq('doublon : identifiant Slack préfixe', findOpenTask(web, 'p170000000099999'), null);
+eq('doublon : absent', findOpenTask(note, 'KEYNONE0000000000'), null);
+eq('doublon : sans clé (page web)', findOpenTask(note, ''), null);
+eq('doublon : note absente', findOpenTask(null, 'KEYOPEN0000000000'), null);
 
 // --- source Gmail --------------------------------------------------------------
 eq('cleanUrl label + compose',
   gmail.cleanUrl('https://mail.google.com/mail/u/0/#label/.Projets%2FAlpha/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG?compose=new'),
   'https://mail.google.com/mail/u/0/#inbox/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG');
+eq('threadKey depuis un libellé', gmail.threadKey('https://mail.google.com/mail/u/1/#label/.Projets%2FAlpha/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG?compose=new'),
+  'FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG');
+eq('threadKey URL nettoyée', gmail.threadKey('https://mail.google.com/mail/u/0/#inbox/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG'),
+  'FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG');
+eq('threadKey id hexadécimal', gmail.threadKey('https://mail.google.com/mail/u/0/#search/devis/18c2f0a1b2c3d4e5'), '18c2f0a1b2c3d4e5');
+eq('threadKey liste (pas de conversation)', gmail.threadKey('https://mail.google.com/mail/u/0/#inbox'), '');
+eq('threadKey liste paginée', gmail.threadKey('https://mail.google.com/mail/u/0/#inbox/p2'), '');
+eq('followKey conversation Gmail', gmail.followKey('https://mail.google.com/mail/u/1/#inbox/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG'),
+  'FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG');
+eq('followKey liste Gmail -> rien', gmail.followKey('https://mail.google.com/mail/u/0/#inbox'), '');
+eq('followKey page web -> URL', gmail.followKey('https://exemple.test/view?id=2&x=1#s'), 'https://exemple.test/view?id=2&x=1#s');
+eq('threadKey hors Gmail', gmail.threadKey('https://example.com/a/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG'), '');
 eq('cleanUrl hors Gmail inchangée', gmail.cleanUrl('https://example.com/a'), 'https://example.com/a');
 eq('titre : Re:, destinataires, crochets',
   gmail.splitAndCleanTitle('Re: [JIRA] point <|@xy @zz|> - moi@exemple.fr - Messagerie Exemple'),
@@ -127,6 +189,10 @@ const U = (id) => 'https://exemple.slack.com/archives/' + id + '/p1';
   ['crochets et sauts de ligne', { author: 'A [b]', channel: 'g1', ctype: '', snippet: 'multi\n  ligne   et [crochets]', url: U('G42') },
     '[#️⃣ @AB - #g1 - multi ligne et crochets](' + U('G42') + ')'],
 ].forEach(([name, res, exp]) => eq('buildMarkdown ' + name, buildMarkdown(res), exp));
+
+eq('messageKey lien markdown', messageKey('[#️⃣ @AM - #dev](https://exemple.slack.com/archives/C0000CANAL/p1700000000123456)'), 'p1700000000123456');
+eq('messageKey message de fil', messageKey('https://exemple.slack.com/archives/C0000CANAL/p1700000000999999?thread_ts=1700000000.123456&cid=C0000CANAL'), 'p1700000000999999');
+eq('messageKey URL sans permalien', messageKey('https://app.slack.com/client/T000/C000'), '');
 
 const long = buildMarkdown({ author: 'X', channel: 'c', ctype: 'channel', snippet: 'a'.repeat(58) + '🚀🎉🔥 suite longue', url: U('C1') });
 eq('troncature : emoji entier puis …', /a{58}🚀…\]/.test(long), true);

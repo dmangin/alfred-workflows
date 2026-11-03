@@ -99,7 +99,7 @@ def designs(wavebox, noteplan):
     return {
         # workflow Follow : Slack + Wavebox -> NotePlan
         'follow': svg(glyph('slack', 26, 22, 176), image(wavebox, 4, 226, 222), image(noteplan, 186, 170, 326)),
-        # keyword fs : Slack -> NotePlan (dessin d'origine)
+        # hotkey ⌥⌘, : Slack -> NotePlan (dessin d'origine du keyword fs)
         'fs': svg(glyph('slack', 20, 20, 234), image(noteplan, 182, 182, 330)),
         # keyword fe : Wavebox -> NotePlan
         'fe': svg(image(wavebox, 0, 0, 290), image(noteplan, 182, 182, 330)),
@@ -114,10 +114,12 @@ def designs(wavebox, noteplan):
 # (bundleid, fichiers) pour chaque dessin ; <UID>.png = icône d'un objet
 TARGETS = {
     'follow': ('com.dmangin.follow', ['icon.png']),
-    'fs': ('com.dmangin.follow', ['D4D7844D-A642-481E-BEE4-D032AD254C27.png',    # keyword fs
-                                  '8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718.png']),  # hotkey ⌥⌘,
+    'fs': ('com.dmangin.follow', ['8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718.png']),  # hotkey ⌥⌘,
     'fe': ('com.dmangin.follow', ['BC4F345C-879E-409D-AF43-6D111E01C152.png',    # keyword fe
-                                  '9E840F4C-361A-445B-BC93-AFC2A948678F.png']),  # hotkey ⌥⇧T
+                                  '9E840F4C-361A-445B-BC93-AFC2A948678F.png',    # hotkey ⌥⇧T
+                                  '7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83.png',    # keyword fes
+                                  '9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5.png',    # keyword feg
+                                  'BC7D8E9F-2A3B-4C4D-8E5F-7A8B9CADBEC7.png']),  # hotkey Hyper+A
     'paste': ('com.dmangin.paste', ['icon.png']),
     'tabs': ('com.dmangin.wavebox-tabs', ['icon.png']),
 }
