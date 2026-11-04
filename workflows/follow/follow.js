@@ -2,6 +2,7 @@
 // Follow — liens et tâches de suivi NotePlan depuis l'onglet actif du navigateur
 // (Wavebox) : message Slack survolé, conversation Gmail ou page web.
 //   copy                lien de l'onglet actif -> presse-papier  (keyword fec, ⌥⌘,)
+//   link                lien de l'onglet actif, renvoyé à Alfred qui le colle  (snippet ::mp)
 //   task <args>         tâche de suivi pour l'onglet actif  (keyword fe)
 //   status              recherche NotePlan sur l'onglet actif : déjà suivi ?  (keyword fes)
 //   waiting-open        ouvre la note d'attente  (keyword feg, Hyper+A)
@@ -62,11 +63,11 @@ function confirmDuplicate(c, dup) {
 // Attente : en tête de la note d'attente (créée si absente), avec l'échéance
 // « >AAAA-MM-JJ », après confirmation si le message y est déjà en attente.
 // Action : dans la note du jour de l'échéance.
-function addTask(ui, c, { rawArgs, recipients, link, key }, dryRun) {
+function addTask(ui, c, { rawArgs, author, link, key }, dryRun) {
   const { waiting, days, prio, action } = planTask(rawArgs, { verb: c.verb, waitingDays: c.waitingDays });
   const now = new Date();
   const due = addWorkingDays(now, days);
-  const text = followTaskLine({ prio, action, created: now, recipients, link });
+  const text = followTaskLine({ prio, action, created: now, author, link });
 
   let url, message;
   if (waiting) {
@@ -87,6 +88,12 @@ function addTask(ui, c, { rawArgs, recipients, link, key }, dryRun) {
   return url;
 }
 
+// Comme dans une tâche fe : l'auteur d'un mail devant son lien.
+function currentLink(c) {
+  const { author, link } = currentItem(c.browser, c.aliases);
+  return [author, link].filter(Boolean).join(' ');
+}
+
 function run(argv) {
   return main('Follow', (ui) => {
     const dryRun = argv.includes('--dry-run');
@@ -94,10 +101,10 @@ function run(argv) {
     const c = conf();
 
     switch (cmd) {
+      case 'link':
+        return currentLink(c);
       case 'copy': {
-        // Comme dans une tâche fe : l'auteur d'un mail devant son lien.
-        const { recipients, link } = currentItem(c.browser, c.aliases);
-        const text = [recipients, link].filter(Boolean).join(' ');
+        const text = currentLink(c);
         if (dryRun) return text;
         app.setTheClipboardTo(text);
         ui.notify('Lien copié — Cmd+V pour le coller.');
@@ -121,7 +128,7 @@ function run(argv) {
         return url;
       }
       default:
-        throw new UserError('Commande inconnue : « ' + cmd + ' » (copy, task, status, waiting-open).');
+        throw new UserError('Commande inconnue : « ' + cmd + ' » (copy, link, task, status, waiting-open).');
     }
   });
 }

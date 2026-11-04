@@ -9,12 +9,12 @@ lib partagée et testée.
 | Workflow | Déclencheurs | Effet |
 |---|---|---|
 | **Follow** | `fec`, `⌥⌘,` (dans Wavebox) | copie le lien de l'onglet actif — message Slack survolé, mail (précédé de son auteur) ou page ; `Cmd+V` pour le coller |
+| | `::mp` | colle ce même lien au curseur — message Slack non : tapé ailleurs, Slack perd le survol (utiliser `⌥⌘,`) |
 | | `fe <jours> <prio> <action>` | tâche de suivi pour l'onglet actif : message Slack survolé, conversation Gmail ou page |
 | | `fes` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
 | | `feg`, Hyper+`A` | ouvre la note d'attente |
 | **Wavebox Tabs** | Hyper+`M`/`S`/`W`/`C`, Hyper+`N` | onglet Gmail/Slack/WhatsApp/Agenda (onglet suivant du même service s'il est déjà actif), NotePlan |
-| **Paste** | `::mp`, `::wb` | colle le lien markdown de l'onglet courant (`@:` mail, `🌐` page web) |
-| | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
+| **Paste** | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
 | *Gmail Searches* | `gmg` | recherches Gmail prédéfinies — workflow personnel sans code, hors dépôt |
 
 Tâche de suivi : `- [ ] !!! 28/09/2026: Suivre @auteur [@: titre](url)` — date de
@@ -80,9 +80,9 @@ Réglée dans Alfred (bouton « Configure Workflow… »), stockée dans le
 
 | Variable | Workflows | Rôle |
 |---|---|---|
-| `gca_conf_gmail_account` | Follow, Paste, Wavebox Tabs | adresse du compte Gmail : départage plusieurs comptes ouverts (vide = premier onglet Gmail) |
+| `gca_conf_gmail_account` | Follow, Wavebox Tabs | adresse du compte Gmail : départage plusieurs comptes ouverts (vide = premier onglet Gmail) |
 | `gca_conf_slack_workspace` | Wavebox Tabs | nom de l'espace Slack tel qu'il figure dans le titre de l'onglet (vide = premier onglet Slack) |
-| `gca_conf_gmail_app` | Follow, Paste | navigateur à piloter (défaut `Wavebox`) |
+| `gca_conf_gmail_app` | Follow | navigateur à piloter (défaut `Wavebox`) |
 | `gca_conf_waiting_note` | Follow | titre de la note d'attente (défaut `En attente de retour`) |
 | `gca_conf_waiting_verb` | Follow | verbe par défaut, qui marque aussi les tâches en attente (défaut `Suivre`) |
 | `gca_conf_waiting_days` | Follow | délai par défaut d'une tâche en attente, en jours ouvrés (défaut `2`) |
@@ -106,7 +106,7 @@ absolu** : modifier un `.js` agit immédiatement, sans réimport.
 `make pull` les recopie ici. Les icônes de Wavebox et NotePlan sont extraites des
 applications installées ; Slack, Gmail, WhatsApp, Agenda et le presse-papier
 de Paste sont des glyphes SVG dessinés dans le script. Une icône propre à un
-objet Alfred (ici `fec`, `⌥⌘,`, `fe`, `fes`, `feg` et Hyper+`A` en Wavebox →
+objet Alfred (ici `fec`, `⌥⌘,`, `::mp`, `fe`, `fes`, `feg` et Hyper+`A` en Wavebox →
 NotePlan) est un fichier `<UID>.png` dans le
 dossier du workflow. `tools/icons.py preview <dossier>` produit un aperçu sans
 toucher à Alfred.

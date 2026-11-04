@@ -86,6 +86,32 @@
 				<false/>
 			</dict>
 		</array>
+		<key>E1F2A3B4-5C6D-4E7F-8A9B-0C1D2E3F4A5B</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>F2A3B4C5-6D7E-4F8A-9B0C-1D2E3F4A5B6C</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>F2A3B4C5-6D7E-4F8A-9B0C-1D2E3F4A5B6C</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A3B4C5D6-7E8F-4A9B-8C1D-2E3F4A5B6C7D</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Damien Mangin</string>
@@ -223,6 +249,25 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>autopaste</key>
+				<true/>
+				<key>clipboardtext</key>
+				<string>{query}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
+				<key>transient</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>A3B4C5D6-7E8F-4A9B-8C1D-2E3F4A5B6C7D</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -339,10 +384,51 @@
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>focusedappvariable</key>
+				<false/>
+				<key>focusedappvariablename</key>
+				<string></string>
+				<key>keyword</key>
+				<string>::mp</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.snippet</string>
+			<key>uid</key>
+			<string>E1F2A3B4-5C6D-4E7F-8A9B-0C1D2E3F4A5B</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" link</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>F2A3B4C5-6D7E-4F8A-9B0C-1D2E3F4A5B6C</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>Follow suit l'onglet actif de Wavebox : le message Slack survolé, sinon la conversation Gmail ouverte, sinon la page.
 fec, ⌥⌘, : copie le lien de l'onglet actif (avec l'auteur d'un mail) ; Cmd+V pour le coller.
+::mp : colle ce même lien au curseur.
 fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », en tête de la note d'attente, échéance &gt;J+N
 (délai par défaut configurable) ; autre action : note du jour J+N (aujourd'hui par défaut).
 fes : recherche NotePlan sur l'onglet. feg, Hyper+A : ouvre la note d'attente.
@@ -386,6 +472,15 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>ypos</key>
 			<real>510.0</real>
 		</dict>
+		<key>A3B4C5D6-7E8F-4A9B-8C1D-2E3F4A5B6C7D</key>
+		<dict>
+			<key>note</key>
+			<string>Auto-paste</string>
+			<key>xpos</key>
+			<real>430.0</real>
+			<key>ypos</key>
+			<real>750.0</real>
+		</dict>
 		<key>AB6C7D8E-1F2A-4B3C-9D4E-6F7A8B9CADB6</key>
 		<dict>
 			<key>xpos</key>
@@ -420,6 +515,22 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<real>230.0</real>
 			<key>ypos</key>
 			<real>30.0</real>
+		</dict>
+		<key>E1F2A3B4-5C6D-4E7F-8A9B-0C1D2E3F4A5B</key>
+		<dict>
+			<key>note</key>
+			<string>colle au curseur le lien de l'onglet actif</string>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>750.0</real>
+		</dict>
+		<key>F2A3B4C5-6D7E-4F8A-9B0C-1D2E3F4A5B6C</key>
+		<dict>
+			<key>xpos</key>
+			<real>230.0</real>
+			<key>ypos</key>
+			<real>750.0</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>

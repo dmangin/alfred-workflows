@@ -80,8 +80,19 @@ Slack, alors qu'un lien de mail passait par `::mp` (Paste). Une seule action
 copie désormais le lien de l'onglet actif avec la même détection que `fe` —
 message Slack survolé, conversation Gmail précédée de son auteur comme dans
 une tâche, sinon la page —, sans plus activer NotePlan : le lien peut se
-coller ailleurs, et Hyper+`N` active NotePlan. `::mp`, qui colle au curseur,
-reste dans Paste.
+coller ailleurs, et Hyper+`N` active NotePlan.
+
+**`::mp` rejoint Follow (04/11/2026)** : `::mp` (Paste) collait le lien avec les
+destinataires que l'ancienne extension Wavebox ajoutait au titre — extension
+retirée depuis longtemps, ce code ne servait plus. Pour coller exactement ce que
+copie `fec` (auteur d'un mail, message Slack survolé), il lui faut la table
+d'alias de Follow ; deux workflows Alfred ne partagent pas leur configuration,
+d'où le déplacement du snippet `::mp` dans Follow (commande `link`, collage par
+Alfred). `::wb`, doublon inutilisé, est supprimé. Paste ne garde que les dates
+et n'a plus de configuration ; le nom « Follow » reste (choix de Damien).
+Limite : `::mp` se tape dans une autre fenêtre, Slack a donc perdu le survol et
+le lien collé est celui de la page ; pour un message, `⌥⌘,` dans Slack puis
+`Cmd+V`.
 
 **Migration (03/11/2026)** : les tâches « Suivre » encore ouvertes des notes du
 jour ont été déplacées une fois pour toutes vers la note d'attente, par un
@@ -131,7 +142,8 @@ script lit la page au moment de l'action (injection JS).
   (`gca_conf_gmail_aliases`, stockée dans le `prefs.plist` local, hors dépôt),
   reprise de l'extension. Expéditeur inconnu : `@prénom_nom` en minuscules,
   sans accents (choix : homogène avec les alias existants).
-- Le marqueur `<|…|>` reste retiré des sujets tant que l'extension est installée.
+- Le marqueur `<|…|>` reste retiré des sujets tant que l'extension est installée
+  (code retiré le 04/11/2026, l'extension n'étant plus installée).
 
 ## Publication (28/09/2026)
 

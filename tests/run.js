@@ -84,12 +84,12 @@ const P = (args) => planTask(args, { verb: 'Suivre', waitingDays: 2 });
 
 // --- ligne de tâche et URL NotePlan -----------------------------------------
 const line = followTaskLine({
-  prio: '!!!', action: 'Suivre', created: D(2026, 9, 28), recipients: '@xy',
+  prio: '!!!', action: 'Suivre', created: D(2026, 9, 28), author: '@xy',
   link: '[@: Budget  2027](https://mail.google.com/mail/u/0/#inbox/abc)',
 });
 eq('ligne complète', line, '- [ ] !!! 28/09/2026: Suivre @xy [@: Budget 2027](https://mail.google.com/mail/u/0/#inbox/abc)');
-eq('ligne sans priorité ni destinataires',
-  followTaskLine({ prio: '', action: 'Suivre', created: D(2026, 9, 28), recipients: '', link: '[x](u)' }),
+eq('ligne sans priorité ni auteur',
+  followTaskLine({ prio: '', action: 'Suivre', created: D(2026, 9, 28), author: '', link: '[x](u)' }),
   '- [ ] 28/09/2026: Suivre [x](u)');
 
 eq('URL note du jour', noteplan.addTextUrl({ date: D(2026, 10, 1), text: '- [ ] a b' }),
@@ -142,16 +142,15 @@ eq('followKey liste Gmail -> rien', gmail.followKey('https://mail.google.com/mai
 eq('followKey page web -> URL', gmail.followKey('https://exemple.test/view?id=2&x=1#s'), 'https://exemple.test/view?id=2&x=1#s');
 eq('threadKey hors Gmail', gmail.threadKey('https://example.com/a/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG'), '');
 eq('cleanUrl hors Gmail inchangée', gmail.cleanUrl('https://example.com/a'), 'https://example.com/a');
-eq('titre : Re:, destinataires, crochets',
-  gmail.splitAndCleanTitle('Re: [JIRA] point <|@xy @zz|> - moi@exemple.fr - Messagerie Exemple'),
-  { title: '{JIRA} point', recipients: '@xy @zz' });
+eq('titre : Re:, crochets, suffixe du compte',
+  gmail.cleanTitle('Re: [JIRA] point - moi@exemple.fr - Messagerie Exemple'), '{JIRA} point');
 eq('titre : suffixe Gmail grand public',
-  gmail.splitAndCleanTitle('Boîte de réception (12) - moi@gmail.com - Gmail'),
-  { title: 'Boîte de réception (12)', recipients: '' });
-eq('titre sans suffixe inchangé', gmail.splitAndCleanTitle('Budget - version 2'), { title: 'Budget - version 2', recipients: '' });
-eq('describeTab page web',
-  gmail.describeTab('https://example.com/a', 'Example'),
-  { recipients: '', link: '[🌐 Example](https://example.com/a)' });
+  gmail.cleanTitle('Boîte de réception (12) - moi@gmail.com - Gmail'), 'Boîte de réception (12)');
+eq('titre sans suffixe inchangé', gmail.cleanTitle('Budget - version 2'), 'Budget - version 2');
+eq('tabLink page web', gmail.tabLink('https://example.com/a', 'Example'), '[🌐 Example](https://example.com/a)');
+eq('tabLink mail',
+  gmail.tabLink('https://mail.google.com/mail/u/0/#inbox/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG', 'Devis - moi@exemple.fr - Gmail'),
+  '[@: Devis](https://mail.google.com/mail/u/0/#inbox/FMfcgzAAAAbbbbCCCCddddEEEEffffGGGG)');
 
 // --- auteur des conversations Gmail -----------------------------------------
 const aliases = gmail.parseAliases(`# collègues

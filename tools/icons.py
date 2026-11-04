@@ -99,7 +99,7 @@ def designs(wavebox, noteplan):
     return {
         # workflow Follow : Slack + Wavebox -> NotePlan
         'follow': svg(glyph('slack', 26, 22, 176), image(wavebox, 4, 226, 222), image(noteplan, 186, 170, 326)),
-        # objets fe, fec… : Wavebox -> NotePlan
+        # objets fe, fec, ::mp… : Wavebox -> NotePlan
         'fe': svg(image(wavebox, 0, 0, 290), image(noteplan, 182, 182, 330)),
         'paste': svg(glyph('paste', 0, 0, 512)),
         # Wavebox Tabs : Wavebox + les services qu'il fait passer au premier plan
@@ -115,6 +115,7 @@ TARGETS = {
     'fe': ('com.dmangin.follow', ['BC4F345C-879E-409D-AF43-6D111E01C152.png',    # keyword fe
                                   'CD8E9FA0-3B4C-4D5E-9F6A-8B9CADBECFD8.png',    # keyword fec
                                   '8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718.png',    # hotkey ⌥⌘,
+                                  'E1F2A3B4-5C6D-4E7F-8A9B-0C1D2E3F4A5B.png',    # snippet ::mp
                                   '7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83.png',    # keyword fes
                                   '9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5.png',    # keyword feg
                                   'BC7D8E9F-2A3B-4C4D-8E5F-7A8B9CADBEC7.png']),  # hotkey Hyper+A
