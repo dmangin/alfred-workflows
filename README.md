@@ -4,13 +4,11 @@ Monorepo des workflows Alfred écrits en JXA (JavaScript for Automation) :
 pilotage de Wavebox (Gmail, Slack…) et tâches de suivi dans NotePlan, avec une
 lib partagée et testée.
 
-Décisions en attente : [TODO.md](TODO.md).
-
 ## Workflows
 
 | Workflow | Déclencheurs | Effet |
 |---|---|---|
-| **Follow** | `⌥⌘,` (dans Wavebox) | lien markdown du message Slack survolé (ou sélectionné au clavier) → presse-papier, active NotePlan ; `Cmd+V` manuel |
+| **Follow** | `fec`, `⌥⌘,` (dans Wavebox) | copie le lien de l'onglet actif — message Slack survolé, mail (précédé de son auteur) ou page ; `Cmd+V` pour le coller |
 | | `fe <jours> <prio> <action>` | tâche de suivi pour l'onglet actif : message Slack survolé, conversation Gmail ou page |
 | | `fes` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
 | | `feg`, Hyper+`A` | ouvre la note d'attente |
@@ -108,8 +106,8 @@ absolu** : modifier un `.js` agit immédiatement, sans réimport.
 `make pull` les recopie ici. Les icônes de Wavebox et NotePlan sont extraites des
 applications installées ; Slack, Gmail, WhatsApp, Agenda et le presse-papier
 de Paste sont des glyphes SVG dessinés dans le script. Une icône propre à un
-objet Alfred (ici `⌥⌘,` en Slack → NotePlan ; `fe`, `fes`, `feg` et Hyper+`A`
-en Wavebox → NotePlan) est un fichier `<UID>.png` dans le
+objet Alfred (ici `fec`, `⌥⌘,`, `fe`, `fes`, `feg` et Hyper+`A` en Wavebox →
+NotePlan) est un fichier `<UID>.png` dans le
 dossier du workflow. `tools/icons.py preview <dossier>` produit un aperçu sans
 toucher à Alfred.
 

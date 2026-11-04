@@ -73,6 +73,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>CD8E9FA0-3B4C-4D5E-9F6A-8B9CADBECFD8</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>D4E5F6A7-B8C9-4D0E-9F1A-2B3C4D5E6F70</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Damien Mangin</string>
@@ -285,12 +298,33 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>fec</string>
+				<key>subtext</key>
+				<string>Copie le lien de l’onglet actif : message Slack survolé, mail (avec son auteur) ou page</string>
+				<key>text</key>
+				<string>Follow : copier le lien</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>CD8E9FA0-3B4C-4D5E-9F6A-8B9CADBECFD8</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" slack-copy</string>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" copy</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -308,7 +342,7 @@
 	</array>
 	<key>readme</key>
 	<string>Follow suit l'onglet actif de Wavebox : le message Slack survolé, sinon la conversation Gmail ouverte, sinon la page.
-⌥⌘, : lien du message Slack survolé -&gt; presse-papier + active NotePlan (Cmd+V manuel).
+fec, ⌥⌘, : copie le lien de l'onglet actif (avec l'auteur d'un mail) ; Cmd+V pour le coller.
 fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », en tête de la note d'attente, échéance &gt;J+N
 (délai par défaut configurable) ; autre action : note du jour J+N (aujourd'hui par défaut).
 fes : recherche NotePlan sur l'onglet. feg, Hyper+A : ouvre la note d'attente.
@@ -322,14 +356,14 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>xpos</key>
 			<real>230.0</real>
 			<key>ypos</key>
-			<real>150.0</real>
+			<real>270.0</real>
 		</dict>
 		<key>7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83</key>
 		<dict>
 			<key>xpos</key>
 			<real>30.0</real>
 			<key>ypos</key>
-			<real>270.0</real>
+			<real>390.0</real>
 		</dict>
 		<key>8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718</key>
 		<dict>
@@ -343,35 +377,42 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>xpos</key>
 			<real>230.0</real>
 			<key>ypos</key>
-			<real>270.0</real>
+			<real>390.0</real>
 		</dict>
 		<key>9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5</key>
 		<dict>
 			<key>xpos</key>
 			<real>30.0</real>
 			<key>ypos</key>
-			<real>390.0</real>
+			<real>510.0</real>
 		</dict>
 		<key>AB6C7D8E-1F2A-4B3C-9D4E-6F7A8B9CADB6</key>
 		<dict>
 			<key>xpos</key>
 			<real>230.0</real>
 			<key>ypos</key>
-			<real>390.0</real>
+			<real>510.0</real>
 		</dict>
 		<key>BC4F345C-879E-409D-AF43-6D111E01C152</key>
 		<dict>
 			<key>xpos</key>
 			<real>30.0</real>
 			<key>ypos</key>
-			<real>150.0</real>
+			<real>270.0</real>
 		</dict>
 		<key>BC7D8E9F-2A3B-4C4D-8E5F-7A8B9CADBEC7</key>
 		<dict>
 			<key>xpos</key>
 			<real>30.0</real>
 			<key>ypos</key>
-			<real>510.0</real>
+			<real>630.0</real>
+		</dict>
+		<key>CD8E9FA0-3B4C-4D5E-9F6A-8B9CADBECFD8</key>
+		<dict>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>150.0</real>
 		</dict>
 		<key>D4E5F6A7-B8C9-4D0E-9F1A-2B3C4D5E6F70</key>
 		<dict>

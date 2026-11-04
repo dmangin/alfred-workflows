@@ -1,7 +1,7 @@
 #!/usr/bin/env osascript -l JavaScript
 // Follow — liens et tâches de suivi NotePlan depuis l'onglet actif du navigateur
 // (Wavebox) : message Slack survolé, conversation Gmail ou page web.
-//   slack-copy          lien du message Slack survolé -> presse-papier + active NotePlan
+//   copy                lien de l'onglet actif -> presse-papier  (keyword fec, ⌥⌘,)
 //   task <args>         tâche de suivi pour l'onglet actif  (keyword fe)
 //   status              recherche NotePlan sur l'onglet actif : déjà suivi ?  (keyword fes)
 //   waiting-open        ouvre la note d'attente  (keyword feg, Hyper+A)
@@ -27,7 +27,6 @@ const noteplan = require('lib/noteplan');
 const { planTask, followTaskLine, findOpenTask } = require('lib/follow');
 const { currentItem } = require('lib/sources/current');
 const gmail = require('lib/sources/gmail');
-const slack = require('lib/sources/slack');
 
 function conf() {
   const days = parseInt(env('gca_conf_waiting_days', '2'), 10);
@@ -95,13 +94,14 @@ function run(argv) {
     const c = conf();
 
     switch (cmd) {
-      case 'slack-copy': {
-        const link = slack.currentMessageLink('Wavebox');
-        if (dryRun) return link;
-        app.setTheClipboardTo(link);
-        Application('NotePlan').activate();
+      case 'copy': {
+        // Comme dans une tâche fe : l'auteur d'un mail devant son lien.
+        const { recipients, link } = currentItem(c.browser, c.aliases);
+        const text = [recipients, link].filter(Boolean).join(' ');
+        if (dryRun) return text;
+        app.setTheClipboardTo(text);
         ui.notify('Lien copié — Cmd+V pour le coller.');
-        return link;
+        return text;
       }
       case 'task':
         return addTask(ui, c, { rawArgs, ...currentItem(c.browser, c.aliases) }, dryRun);
@@ -121,7 +121,7 @@ function run(argv) {
         return url;
       }
       default:
-        throw new UserError('Commande inconnue : « ' + cmd + ' » (slack-copy, task, status, waiting-open).');
+        throw new UserError('Commande inconnue : « ' + cmd + ' » (copy, task, status, waiting-open).');
     }
   });
 }

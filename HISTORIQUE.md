@@ -74,6 +74,15 @@ mail s'il est déjà suivi.
 | Doublons dans les notes du jour | abandonné | même coût ; après la migration, les tâches en attente sont toutes dans la note d'attente |
 | Ordre d'ajout | fin de la note du jour (journal), tête de la note d'attente (les plus récentes visibles) | l'ordre utile, par échéance, demanderait de réécrire la note ; NotePlan montre de toute façon chaque tâche le jour de son échéance |
 
+**Copie du lien (04/11/2026)** : ⌥⌘, ne copiait que le lien d'un message
+Slack, alors qu'un lien de mail passait par `::mp` (Paste). Une seule action
+`copy` (keyword `fec` et ⌥⌘,, choix de Damien : les deux pour commencer)
+copie désormais le lien de l'onglet actif avec la même détection que `fe` —
+message Slack survolé, conversation Gmail précédée de son auteur comme dans
+une tâche, sinon la page —, sans plus activer NotePlan : le lien peut se
+coller ailleurs, et Hyper+`N` active NotePlan. `::mp`, qui colle au curseur,
+reste dans Paste.
+
 **Migration (03/11/2026)** : les tâches « Suivre » encore ouvertes des notes du
 jour ont été déplacées une fois pour toutes vers la note d'attente, par un
 script ponctuel (hors dépôt, archivé avec la sauvegarde des notes) :
