@@ -94,6 +94,18 @@ Limite : `::mp` se tape dans une autre fenêtre, Slack a donc perdu le survol et
 le lien collé est celui de la page ; pour un message, `⌥⌘,` dans Slack puis
 `Cmd+V`.
 
+**Deux NotePlan (06/11/2026)** : `fe` en attente ne faisait plus rien. L'app
+Claude lance désormais le binaire de NotePlan en serveur MCP (`NotePlan
+mcp-server`), que macOS enregistre comme une seconde app « NotePlan » ;
+`tell application "NotePlan"` visait cette instance : erreur -600, ou plantage
+d'osascript via NSAppleScript. `readNote` envoie maintenant l'événement Apple
+directement au pid de l'instance principale (celle lancée sans `mcp-server`).
+Pas de lancement automatique : NotePlan refuse une seconde instance (essai
+malheureux, deux instances en trop lancées puis fermées). Les URL
+`noteplan://` arrivent bien à l'instance principale. Au passage : l'auteur
+d'un mail ouvert depuis un libellé imbriqué (`#label/A%2FB/<jeton>`) n'était
+pas détecté, le test de conversation ouverte n'acceptant qu'un niveau.
+
 **Migration (03/11/2026)** : les tâches « Suivre » encore ouvertes des notes du
 jour ont été déplacées une fois pour toutes vers la note d'attente, par un
 script ponctuel (hors dépôt, archivé avec la sauvegarde des notes) :

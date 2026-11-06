@@ -101,7 +101,6 @@ eq('URL création de note', noteplan.addNoteUrl({ title: 'En attente', text: '- 
 eq('URL ouverture de note', noteplan.openNoteUrl('En attente'), 'noteplan://x-callback-url/openNote?noteTitle=En%20attente');
 eq('URL recherche', noteplan.searchUrl('FMfcgzAAAA'), 'noteplan://x-callback-url/search?text=FMfcgzAAAA');
 eq('tâche planifiée', noteplan.scheduled('- [ ] a', D(2026, 10, 1)), '- [ ] a >2026-10-01');
-eq('chaîne AppleScript : guillemets et antislash', noteplan.quote('a "b" c\\d'), '"a \\"b\\" c\\\\d"');
 
 // --- doublons dans la note d'attente ----------------------------------------
 const note = `# En attente de retour
