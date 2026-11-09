@@ -12,7 +12,7 @@ lib partagée et testée.
 | | `::mp` | colle ce même lien au curseur — message Slack non : tapé ailleurs, Slack perd le survol (utiliser `⌥⌘,`) |
 | | `fe <jours> <prio> <action>` | tâche de suivi pour l'onglet actif : message Slack survolé, conversation Gmail ou page |
 | | `fes` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
-| | `feg`, Hyper+`A` | ouvre la note d'attente |
+| | `feg`, Hyper+`A` | trie la note d'attente, met à jour ses pastilles et l'ouvre |
 | **Wavebox Tabs** | Hyper+`M`/`S`/`W`/`C`, Hyper+`N` | onglet Gmail/Slack/WhatsApp/Agenda (onglet suivant du même service s'il est déjà actif), NotePlan |
 | **Paste** | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
 | *Gmail Searches* | `gmg` | recherches Gmail prédéfinies — workflow personnel sans code, hors dépôt |
@@ -22,7 +22,7 @@ création, priorité et action optionnelles. Deux destinations, selon l'action :
 
 | Action | Type | Destination | Échéance sans nombre de jours |
 |---|---|---|---|
-| vide ou commençant par le mot « Suivre » (`fe`, `fe 3 suivre devis`) | en attente de retour | en tête de la note d'attente, `… >AAAA-MM-JJ` | délai d'attente (2 jours ouvrés) |
+| vide ou commençant par le mot « Suivre » (`fe`, `fe 3 suivre devis`) | en attente de retour | à sa place dans la note d'attente, `… >AAAA-MM-JJ` | délai d'attente (2 jours ouvrés) |
 | toute autre (`fe relancer Bob`) | action | note du jour à J+N | aujourd'hui |
 
 **Onglet actif** : un onglet Slack avec un message survolé (ou sélectionné au
@@ -30,7 +30,20 @@ clavier) donne le lien de ce message ; une conversation Gmail ouverte, son lien
 et son auteur ; tout le reste — un onglet Slack sans message survolé compris —
 le lien de la page (`🌐`).
 
-La note d'attente est commune à tous les canaux et créée si absente. Si le
+La note d'attente est commune à tous les canaux et créée si absente. Elle est
+tenue triée par échéance décroissante : les plus lointaines en haut, les plus
+anciennes en bas ; à échéance égale, la plus récente d'abord ; sans échéance,
+tout en bas. Chaque `fe` en attente réécrit la note avec la nouvelle tâche à sa
+place, et `feg` la retrie (après une échéance changée à la main).
+Seul le bloc sous le titre est trié, tâches cochées ou annulées comprises :
+une tâche emporte les lignes qui la suivent (sous-lignes `> …`, texte) ; les
+propriétés, le titre, ce qui précède la première tâche et les sections
+suivantes (`## Terminé`, `## Annulé`) ne bougent pas. Chaque tâche ouverte du
+bloc porte une pastille après sa date de création, recalculée à chaque `fe` et
+`feg` : 🔵 échéance au-delà de J+7, 🟡 d'aujourd'hui à J+7, 🟠 en retard de 1 à
+7 jours, 🔴 au-delà (jours calendaires), ⚪ sans échéance ; rien sur une tâche
+cochée ou annulée.
+NotePlan fermé, `feg` ouvre la note sans la toucher. Si le
 message y a déjà une tâche ouverte, un dialogue « Déjà en attente depuis le … »
 propose de créer quand même (↩) ou d'annuler (Échap). Le message est
 identifié par l'identifiant de conversation Gmail (`FMfcg…`, le même quels que
@@ -128,6 +141,8 @@ ni ajout.
 
 - Wavebox : `View › Developer › Allow JavaScript from Apple Events`.
 - macOS : Alfred autorisé dans Automation (Wavebox, NotePlan).
-- NotePlan 3.22 ou plus : la note d'attente est lue par son dictionnaire
-  AppleScript (`readNote`), que JXA ne sait pas appeler — `lib/noteplan.js`
-  passe par `NSAppleScript`. Tout le reste passe par l'URL scheme.
+- NotePlan 3.22 ou plus : la note d'attente est lue et réécrite par son
+  dictionnaire AppleScript (`readNote`, `writeNote`), que JXA ne sait pas
+  appeler — `lib/noteplan.js` envoie les événements Apple au pid de l'app
+  (l'app Claude lance aussi une instance « serveur MCP » de NotePlan). Tout le
+  reste passe par l'URL scheme.

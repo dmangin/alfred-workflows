@@ -233,7 +233,7 @@
 				<key>keyword</key>
 				<string>feg</string>
 				<key>subtext</key>
-				<string>Ouvre la note d’attente dans NotePlan</string>
+				<string>Trie la note d’attente, met à jour ses pastilles 🔵🟡🟠🔴⚪ et l’ouvre</string>
 				<key>text</key>
 				<string>Follow : en attente</string>
 				<key>withspace</key>
@@ -429,9 +429,10 @@
 	<string>Follow suit l'onglet actif de Wavebox : le message Slack survolé, sinon la conversation Gmail ouverte, sinon la page.
 fec, ⌥⌘, : copie le lien de l'onglet actif (avec l'auteur d'un mail) ; Cmd+V pour le coller.
 ::mp : colle ce même lien au curseur.
-fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », en tête de la note d'attente, échéance &gt;J+N
+fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », à sa place dans la note d'attente
+(triée par échéance décroissante), échéance &gt;J+N
 (délai par défaut configurable) ; autre action : note du jour J+N (aujourd'hui par défaut).
-fes : recherche NotePlan sur l'onglet. feg, Hyper+A : ouvre la note d'attente.
+fes : recherche NotePlan sur l'onglet. feg, Hyper+A : trie la note d'attente, met à jour ses pastilles (🔵 échéance au-delà de 7 jours, 🟡 d'ici 7 jours, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, ⚪ sans échéance) et l'ouvre.
 Jours ouvrés : un samedi/dimanche compte comme le lundi suivant.
 
 Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (repo 2609-alfred-jxa).</string>

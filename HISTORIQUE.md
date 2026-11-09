@@ -94,6 +94,32 @@ Limite : `::mp` se tape dans une autre fenêtre, Slack a donc perdu le survol et
 le lien collé est celui de la page ; pour un message, `⌥⌘,` dans Slack puis
 `Cmd+V`.
 
+**Tri par échéance (09/11/2026)** : l'ajout en tête mélangeait les nouvelles
+tâches aux anciennes. Choix de Damien : échéances décroissantes (les plus
+anciennes en bas, logique avec des ajouts en haut), `fe` place la tâche à sa
+place en réécrivant la note (`writeNote`, la note est déjà lue pour les
+doublons) et `fet` retrie à la demande ; tâches cochées ou annulées du bloc
+triées avec les autres ; une tâche emporte les lignes qui la suivent. À
+échéance égale, la plus récemment créée d'abord ; sans échéance, en bas. Seul
+le bloc sous le titre bouge. Vérifié sur une copie de la note réelle (mêmes
+lignes, archives et sous-lignes intactes) et sur une note jetable ; note
+sauvegardée avant la première réécriture. `prependUrl` n'a plus d'usage.
+
+**Pastilles d'échéance (09/11/2026)** : pour repérer d'un coup d'œil les
+tâches qui pressent, chaque tâche ouverte du bloc trié reçoit une pastille
+après sa date de création (`- [ ] !!! 28/10/2026: 🔴 Suivre …`) : 🟡 échéance
+d'aujourd'hui à J+7, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, rien plus loin ;
+en jours calendaires. Un emoji plutôt qu'un style de thème NotePlan : marche
+avec tout thème, sur mobile, sans réglage. Placée après la date de création
+pour garder la priorité `!!!` et les styles de thème qui attendent
+`!!! jj/mm/aaaa:` derrière la case. Recalculée à chaque `fe` en attente et
+`feg` ; retirée d'une tâche cochée ou annulée. Colorer impose de réécrire la
+note : `feg` trie donc aussi, et `fet` disparaît (même effet). NotePlan fermé,
+`feg` l'ouvre par URL sans rien mettre à jour (jamais de lancement direct).
+Après essai, toute tâche ouverte a sa pastille : 🔵 au-delà de J+7 (bleu
+plutôt que vert, qui se lirait « fait »), ⚪ sans échéance — une tâche que
+NotePlan ne remontera dans aucune note du jour, à planifier.
+
 **Deux NotePlan (06/11/2026)** : `fe` en attente ne faisait plus rien. L'app
 Claude lance désormais le binaire de NotePlan en serveur MCP (`NotePlan
 mcp-server`), que macOS enregistre comme une seconde app « NotePlan » ;

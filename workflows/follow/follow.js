@@ -5,10 +5,12 @@
 //   link                lien de l'onglet actif, renvoyé à Alfred qui le colle  (snippet ::mp)
 //   task <args>         tâche de suivi pour l'onglet actif  (keyword fe)
 //   status              recherche NotePlan sur l'onglet actif : déjà suivi ?  (keyword fes)
-//   waiting-open        ouvre la note d'attente  (keyword feg, Hyper+A)
+//   waiting-open        trie la note d'attente, met à jour ses pastilles et l'ouvre
+//                       (keyword feg, Hyper+A)
 // <args> = « <jours ouvrés> <priorité> <action> », tout optionnel : « 2 !!! voir XX ».
 // Action vide ou commençant par le verbe par défaut (« Suivre ») : tâche en attente
-// de retour, en tête de la note d'attente ; sinon tâche d'action, dans la note du jour.
+// de retour, à sa place dans la note d'attente, triée par échéance décroissante,
+// pastilles 🔵🟡🟠🔴⚪ à jour ; sinon tâche d'action, dans la note du jour.
 // --dry-run : affiche le résultat sans presse-papier, activation ni ajout.
 'use strict';
 
@@ -25,7 +27,7 @@ const require = (() => {
 const { app, env, main, UserError } = require('lib/alfred');
 const { addWorkingDays, frDate } = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { planTask, followTaskLine, findOpenTask } = require('lib/follow');
+const { planTask, followTaskLine, findOpenTask, sortWaiting } = require('lib/follow');
 const { currentItem } = require('lib/sources/current');
 const gmail = require('lib/sources/gmail');
 
@@ -60,8 +62,9 @@ function confirmDuplicate(c, dup) {
   }
 }
 
-// Attente : en tête de la note d'attente (créée si absente), avec l'échéance
-// « >AAAA-MM-JJ », après confirmation si le message y est déjà en attente.
+// Attente : dans la note d'attente (créée si absente), avec l'échéance
+// « >AAAA-MM-JJ », à sa place dans l'ordre des échéances (la note est réécrite
+// triée, pastilles à jour), après confirmation si le message y est déjà en attente.
 // Action : dans la note du jour de l'échéance.
 function addTask(ui, c, { rawArgs, author, link, key }, dryRun) {
   const { waiting, days, prio, action } = planTask(rawArgs, { verb: c.verb, waitingDays: c.waitingDays });
@@ -71,13 +74,21 @@ function addTask(ui, c, { rawArgs, author, link, key }, dryRun) {
 
   let url, message;
   if (waiting) {
-    const note = { title: c.waitingNote, text: noteplan.scheduled(text, due) };
+    const line = noteplan.scheduled(text, due);
     const content = noteplan.readNote(c.waitingNote);
     const dup = findOpenTask(content, key);
-    url = content === null ? noteplan.addNoteUrl(note) : noteplan.prependUrl(note);
-    if (dryRun) return url + (dup ? ' (doublon : ' + (dup.created || 'sans date') + ')' : '');
-    if (dup && !confirmDuplicate(c, dup)) return '';
+    const doublon = dup ? ' (doublon : ' + (dup.created || 'sans date') + ')' : '';
     message = 'Tâche ajoutée à « ' + c.waitingNote + ' », échéance ' + frDate(due) + '.';
+    if (content === null) {
+      url = noteplan.addNoteUrl({ title: c.waitingNote, text: line });
+      if (dryRun) return url;
+    } else {
+      url = noteplan.openNoteUrl(c.waitingNote);
+      const sorted = sortWaiting(content, line, now);
+      if (dryRun) return 'writeNote « ' + c.waitingNote + ' » + ' + url + doublon + '\n' + sorted;
+      if (dup && !confirmDuplicate(c, dup)) return '';
+      noteplan.writeNote(c.waitingNote, sorted);
+    }
   } else {
     url = noteplan.addTextUrl({ date: due, text });
     if (dryRun) return url;
@@ -120,11 +131,20 @@ function run(argv) {
         return url;
       }
       case 'waiting-open': {
-        if (noteplan.readNote(c.waitingNote) === null) {
+        const url = noteplan.openNoteUrl(c.waitingNote);
+        // NotePlan fermé : l'URL le lance, sans tri ni pastilles.
+        if (!noteplan.isRunning()) {
+          if (!dryRun) app.openLocation(url);
+          return dryRun ? 'NotePlan fermé : ' + url : url;
+        }
+        const content = noteplan.readNote(c.waitingNote);
+        if (content === null) {
           throw new UserError('La note « ' + c.waitingNote + ' » n’existe pas encore : le premier fe en attente la créera.');
         }
-        const url = noteplan.openNoteUrl(c.waitingNote);
-        if (!dryRun) app.openLocation(url);
+        const tidy = sortWaiting(content, '', new Date());
+        if (dryRun) return (tidy === content ? 'inchangée' : 'writeNote') + ' + ' + url + '\n' + tidy;
+        if (tidy !== content) noteplan.writeNote(c.waitingNote, tidy);
+        app.openLocation(url);
         return url;
       }
       default:

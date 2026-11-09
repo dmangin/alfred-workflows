@@ -16,7 +16,7 @@ const require = (() => {
 
 const dates = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask } = require('lib/follow');
+const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortWaiting } = require('lib/follow');
 const gmail = require('lib/sources/gmail');
 const { buildMarkdown, messageKey } = require('lib/sources/slack');
 
@@ -94,8 +94,6 @@ eq('ligne sans priorité ni auteur',
 
 eq('URL note du jour', noteplan.addTextUrl({ date: D(2026, 10, 1), text: '- [ ] a b' }),
   'noteplan://x-callback-url/addText?noteDate=20261001&openNote=yes&text=-%20%5B%20%5D%20a%20b');
-eq('URL ajout en tête', noteplan.prependUrl({ title: 'En attente', text: '- [ ] a >2026-10-01' }),
-  'noteplan://x-callback-url/addText?noteTitle=En%20attente&openNote=yes&mode=prepend&text=-%20%5B%20%5D%20a%20%3E2026-10-01');
 eq('URL création de note', noteplan.addNoteUrl({ title: 'En attente', text: '- [ ] a' }),
   'noteplan://x-callback-url/addNote?noteTitle=En%20attente&openNote=yes&text=-%20%5B%20%5D%20a');
 eq('URL ouverture de note', noteplan.openNoteUrl('En attente'), 'noteplan://x-callback-url/openNote?noteTitle=En%20attente');
@@ -109,6 +107,71 @@ const note = `# En attente de retour
 * [ ] Suivre sans date KEYSTAR0000000000`;
 eq('doublon : tâche ouverte', findOpenTask(note, 'KEYOPEN0000000000'), { created: '02/10/2026' });
 eq('doublon : tâche faite ignorée', findOpenTask(note, 'KEYDONE0000000000'), null);
+
+// --- tri de la note d'attente -----------------------------------------------
+const waitingNote = [
+  '---', 'icon: x', '---', '# En attente',
+  'intro libre',
+  '- [ ] 01/10/2026: Suivre a >2026-10-03',
+  '\t> 05/10/2026: relancé',
+  '- [ ] 02/10/2026: Suivre b >2026-11-05',
+  '- [x] 03/10/2026: Suivre c >2026-10-20',
+  '- [ ] 04/10/2026: Suivre d >2026-11-05',
+  '- [ ] sans échéance',
+  '- [-] 05/10/2026: Suivre e >2026-09-01',
+  '',
+  '## Terminé',
+  '- [x] 01/09/2026: vieux >2026-12-31',
+  '',
+].join('\n');
+eq('tri : décroissant, sous-lignes suivies, archives intactes', sortWaiting(waitingNote).split('\n'), [
+  '---', 'icon: x', '---', '# En attente',
+  'intro libre',
+  '- [ ] 04/10/2026: Suivre d >2026-11-05',
+  '- [ ] 02/10/2026: Suivre b >2026-11-05',
+  '- [x] 03/10/2026: Suivre c >2026-10-20',
+  '- [ ] 01/10/2026: Suivre a >2026-10-03',
+  '\t> 05/10/2026: relancé',
+  '- [-] 05/10/2026: Suivre e >2026-09-01',
+  '- [ ] sans échéance',
+  '',
+  '## Terminé',
+  '- [x] 01/09/2026: vieux >2026-12-31',
+  '',
+]);
+eq('tri : idempotent', sortWaiting(sortWaiting(waitingNote)), sortWaiting(waitingNote));
+eq('tri : insertion à sa place', sortWaiting('# W\n- [ ] 01/10/2026: x >2026-11-10\n- [ ] 01/10/2026: y >2026-10-01',
+  '- [ ] 09/11/2026: z >2026-10-15'),
+  '# W\n- [ ] 01/10/2026: x >2026-11-10\n- [ ] 09/11/2026: z >2026-10-15\n- [ ] 01/10/2026: y >2026-10-01');
+eq('tri : insertion dans une note sans tâche', sortWaiting('# W\n', '- [ ] t >2026-10-15'), '# W\n- [ ] t >2026-10-15\n');
+eq('tri : échéance = dernier >date de la ligne', sortWaiting('# W\n- [ ] a >2026-01-01 puis >2026-12-01\n- [ ] b >2026-06-01'),
+  '# W\n- [ ] a >2026-01-01 puis >2026-12-01\n- [ ] b >2026-06-01');
+// --- pastilles d'échéance ---------------------------------------------------
+const today = D(2026, 11, 9, 23, 30); // lundi soir : seule la date compte
+eq('pastille : J+8, bleue', dueBadge('2026-11-17', today), '🔵');
+eq('pastille : J+7, jaune', dueBadge('2026-11-16', today), '🟡');
+eq('pastille : aujourd\'hui, jaune', dueBadge('2026-11-09', today), '🟡');
+eq('pastille : J-1, orange', dueBadge('2026-11-08', today), '🟠');
+eq('pastille : J-7, orange', dueBadge('2026-11-02', today), '🟠');
+eq('pastille : J-8, rouge', dueBadge('2026-11-01', today), '🔴');
+eq('pastille : sans échéance, blanche', dueBadge('', today), '⚪');
+eq('pastille : J+7 à travers le changement d\'heure', dueBadge('2026-03-30', D(2026, 3, 23, 0, 30)), '🟡');
+eq('pastille : après date de création et priorité',
+  markTask('- [ ] !!! 28/10/2026: Suivre @bob [@: devis](u) >2026-10-30', today),
+  '- [ ] !!! 28/10/2026: 🔴 Suivre @bob [@: devis](u) >2026-10-30');
+eq('pastille : remplacée', markTask('- [ ] 28/10/2026: 🔴 Suivre >2026-11-12', today), '- [ ] 28/10/2026: 🟡 Suivre >2026-11-12');
+eq('pastille : bleue si lointaine', markTask('- [ ] 28/10/2026: 🟡 Suivre >2026-12-12', today), '- [ ] 28/10/2026: 🔵 Suivre >2026-12-12');
+eq('pastille : blanche sans échéance', markTask('- [ ] 28/10/2026: Suivre [🌐 page](u)', today), '- [ ] 28/10/2026: ⚪ Suivre [🌐 page](u)');
+eq('pastille : blanche avec sélecteur de variante remplacée', markTask('- [ ] 28/10/2026: ⚪\uFE0F Suivre >2026-11-09', today), '- [ ] 28/10/2026: 🟡 Suivre >2026-11-09');
+eq('pastille : retirée si cochée et sans échéance', markTask('- [x] ⚪ Suivre', today), '- [x] Suivre');
+eq('pastille : retirée si cochée', markTask('- [x] 28/10/2026: 🔴 Suivre >2026-10-01', today), '- [x] 28/10/2026: Suivre >2026-10-01');
+eq('pastille : retirée si annulée', markTask('- [-] 🟠 Suivre >2026-11-05', today), '- [-] Suivre >2026-11-05');
+eq('pastille : sans date de création', markTask('* [ ] !! Suivre >2026-11-05', today), '* [ ] !! 🟠 Suivre >2026-11-05');
+eq('pastille : idempotente', markTask(markTask('- [ ] 01/11/2026: a >2026-11-05', today), today), '- [ ] 01/11/2026: 🟠 a >2026-11-05');
+eq('tri + pastilles : bloc seulement, ligne ajoutée comprise',
+  sortWaiting('# W\n- [ ] 01/10/2026: a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01',
+    '- [ ] 09/11/2026: c >2026-11-11', today),
+  '# W\n- [ ] 09/11/2026: 🟡 c >2026-11-11\n- [ ] 01/10/2026: 🔴 a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01');
 eq('doublon : marqueur *, sans date', findOpenTask(note, 'KEYSTAR0000000000'), { created: '' });
 const web = `- [ ] 03/11/2026: Suivre [🌐 Ticket](https://exemple.test/browse/ABC-12) >2026-11-05
 - [ ] 03/11/2026: Suivre [🌐 Vue](https://exemple.test/view?id=2&x=1) >2026-11-05
