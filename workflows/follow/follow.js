@@ -6,12 +6,12 @@
 //   task <args>         tâche de suivi pour l'onglet actif  (keyword fe)
 //   status              recherche NotePlan sur l'onglet actif : déjà suivi ?  (keyword fes)
 //   resolve             résout ses suivis ouverts et archive le mail  (keyword fer)
-//   waiting-open        trie la note d'attente, met à jour ses pastilles et l'ouvre
-//                       (keyword feg, Hyper+A)
+//   open                range la note de suivi et l'ouvre  (keyword feg, Hyper+A)
 // <args> = « <jours ouvrés> <priorité> <action> », tout optionnel : « 2 !!! voir XX ».
-// Action vide ou commençant par le verbe par défaut (« Suivre ») : tâche en attente
-// de retour, à sa place dans la note d'attente, triée par échéance décroissante,
-// pastilles 🔵🟡🟠🔴⚪ à jour ; sinon tâche d'action, dans la note du jour.
+// Toutes les tâches vont dans la note de suivi (« Suivi »), triées par échéance
+// décroissante, pastilles 🔵🟡🟠🔴⚪ à jour : action vide ou commençant par le
+// verbe par défaut (« Suivre ») dans la section « En attente », toute autre
+// dans « À faire ».
 // --dry-run : affiche le résultat sans presse-papier, activation ni ajout.
 'use strict';
 
@@ -26,24 +26,19 @@ const require = (() => {
 })();
 
 const { app, env, main, UserError } = require('lib/alfred');
-const { addWorkingDays, frDate, npDate } = require('lib/dates');
+const { addWorkingDays, frDate } = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { planTask, followTaskLine, findOpenTask, sortWaiting, resolveWaiting, resolveDaily } = require('lib/follow');
+const { TODO, WAITING, planTask, followTaskLine, findOpenTask, sortFollow, resolveFollow } = require('lib/follow');
 const { currentItem } = require('lib/sources/current');
 const gmail = require('lib/sources/gmail');
 
 function conf() {
   const days = parseInt(env('gca_conf_waiting_days', '2'), 10);
-  const span = (name, def) => {
-    const n = parseInt(env(name, String(def)), 10);
-    return n >= 0 ? n : def;
-  };
   return {
     browser: env('gca_conf_gmail_app', 'Wavebox'),
-    waitingNote: env('gca_conf_waiting_note', 'En attente de retour'),
+    // Variable historique : elle désignait la note d'attente, devenue note de suivi.
+    note: env('gca_conf_waiting_note', 'Suivi'),
     waitingDays: days >= 0 ? days : 2,
-    resolveBefore: span('gca_conf_resolve_days_before', 60),
-    resolveAfter: span('gca_conf_resolve_days_after', 30),
     verb: env('gca_conf_waiting_verb', 'Suivre'),
     aliases: gmail.parseAliases(env('gca_conf_gmail_aliases', '')),
   };
@@ -62,92 +57,58 @@ function confirm(text, ok, cancel = 'Annuler') {
   }
 }
 
-const confirmDuplicate = (c, dup) => confirm('Déjà en attente' + (dup.created ? ' depuis le ' + dup.created : '') +
-  ' dans « ' + c.waitingNote + ' ».', 'Créer quand même');
+const confirmDuplicate = (c, dup) => confirm('Déjà suivi' + (dup.created ? ' depuis le ' + dup.created : '') +
+  ' dans « ' + c.note + ' ».', 'Créer quand même');
 
-// Attente : dans la note d'attente (créée si absente), avec l'échéance
-// « >AAAA-MM-JJ », à sa place dans l'ordre des échéances (la note est réécrite
-// triée, pastilles à jour), après confirmation si le message y est déjà en attente.
-// Action : dans la note du jour de l'échéance.
+// Dans la note de suivi (créée si absente), section « En attente » ou « À
+// faire », avec l'échéance « >AAAA-MM-JJ », à sa place dans l'ordre des
+// échéances (la note est réécrite rangée), après confirmation si le message y
+// est déjà suivi.
 function addTask(ui, c, { rawArgs, author, link, key }, dryRun) {
   const { waiting, days, prio, action } = planTask(rawArgs, { verb: c.verb, waitingDays: c.waitingDays });
   const now = new Date();
   const due = addWorkingDays(now, days);
-  const text = followTaskLine({ prio, action, created: now, author, link });
-
-  let url, message;
-  if (waiting) {
-    const line = noteplan.scheduled(text, due);
-    const content = noteplan.readNote(c.waitingNote);
-    const dup = findOpenTask(content, key);
-    const doublon = dup ? ' (doublon : ' + (dup.created || 'sans date') + ')' : '';
-    message = 'Tâche ajoutée à « ' + c.waitingNote + ' », échéance ' + frDate(due) + '.';
-    if (content === null) {
-      url = noteplan.addNoteUrl({ title: c.waitingNote, text: line });
-      if (dryRun) return url;
-    } else {
-      url = noteplan.openNoteUrl(c.waitingNote);
-      const sorted = sortWaiting(content, line, now);
-      if (dryRun) return 'writeNote « ' + c.waitingNote + ' » + ' + url + doublon + '\n' + sorted;
-      if (dup && !confirmDuplicate(c, dup)) return '';
-      noteplan.writeNote(c.waitingNote, sorted);
-    }
-  } else {
-    url = noteplan.addTextUrl({ date: due, text });
+  const add = { section: waiting ? WAITING : TODO, line: noteplan.scheduled(followTaskLine({ prio, action, created: now, author, link }), due) };
+  const content = noteplan.readNote(c.note);
+  const message = 'Tâche ajoutée à « ' + c.note + ' » (' + add.section + '), échéance ' + frDate(due) + '.';
+  let url;
+  if (content === null) {
+    url = noteplan.addNoteUrl({ title: c.note, text: sortFollow('', { add, today: now }) });
     if (dryRun) return url;
-    message = 'Tâche ajoutée à la note du ' + frDate(due) + '.';
+  } else {
+    url = noteplan.openNoteUrl(c.note);
+    const dup = findOpenTask(content, key);
+    const sorted = sortFollow(content, { add, today: now });
+    if (dryRun) return 'writeNote « ' + c.note + ' » + ' + url + (dup ? ' (doublon : ' + (dup.created || 'sans date') + ')' : '') + '\n' + sorted;
+    if (dup && !confirmDuplicate(c, dup)) return '';
+    noteplan.writeNote(c.note, sorted);
   }
   app.openLocation(url);
   ui.notify(message);
   return url;
 }
 
-// Notes du jour de J-before à J+after où une tâche ouverte cite `key` :
-// [{ title: 'AAAAMMJJ', date, content, count }] (contenu résolu).
-function dailyMatches(key, now, before, after) {
-  const found = [];
-  for (let i = -before; i <= after; i++) {
-    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-    const title = npDate(date);
-    const content = noteplan.readNote(title);
-    if (!content || !content.includes(key)) continue;
-    const r = resolveDaily(content, key, now);
-    if (r.count) found.push({ title, date, ...r });
-  }
-  return found;
-}
-
-// Résolution : les suivis ouverts de l'onglet passent cochés, en tête de
-// « Terminé » dans la note d'attente, sur place dans les notes du jour
-// (J-60 à J+30 par défaut) ; aucun : dialogue pour en créer un déjà résolu dans
-// la note d'attente (traçabilité) ou ne rien faire. Puis, sur une conversation
-// Gmail portant un libellé (hors boîte de réception), archivage.
+// Résolution : les suivis ouverts de l'onglet passent cochés en tête de
+// « Terminé » ; aucun : dialogue pour en créer un déjà résolu (traçabilité) ou
+// ne rien faire. Puis, sur une conversation Gmail portant un libellé à soi,
+// archivage.
 function resolve(ui, c, { author, link, key, tab }, dryRun) {
   if (!key) throw new UserError('Rien à résoudre : ouvre une conversation Gmail, survole un message Slack ou ouvre une page.');
-  const content = noteplan.readNote(c.waitingNote);
-  if (content === null) throw new UserError('La note « ' + c.waitingNote + ' » n’existe pas encore.');
+  const content = noteplan.readNote(c.note);
+  if (content === null) throw new UserError('La note « ' + c.note + ' » n’existe pas encore.');
   const now = new Date();
   const mail = !!gmail.threadKey(tab.url());
-  let r = resolveWaiting(content, key, now);
-  const days = dailyMatches(key, now, c.resolveBefore, c.resolveAfter);
-  const total = r.count + days.reduce((n, d) => n + d.count, 0);
-  const where = days.length ? ' (dont ' + days.map((d) => d.count + ' le ' + frDate(d.date)).join(', ') + ')' : '';
-  if (!total) {
+  let r = resolveFollow(content, key, now);
+  if (!r.count) {
     const line = followTaskLine({ prio: '', action: c.verb, created: now, author, link });
     if (dryRun) return 'aucun suivi ouvert : dialogue, puis' + (mail ? ' archivage +' : '') + ' writeNote\n' +
-      resolveWaiting(content, key, now, line).content;
-    if (!confirm('Aucun suivi ouvert pour cet onglet, ni dans « ' + c.waitingNote + ' », ni dans les notes du jour (J-' +
-      c.resolveBefore + ' à J+' + c.resolveAfter + ').', 'Créer résolu', 'Ne rien faire')) return '';
-    r = resolveWaiting(content, key, now, line);
+      resolveFollow(content, key, now, line).content;
+    if (!confirm('Aucun suivi ouvert pour cet onglet dans « ' + c.note + ' ».', 'Créer résolu', 'Ne rien faire')) return '';
+    r = resolveFollow(content, key, now, line);
   }
-  if (dryRun) {
-    return total + ' suivi(s) résolu(s)' + where + (mail ? ' + archivage' : '') +
-      (r.count ? '\nwriteNote « ' + c.waitingNote + ' »\n' + r.content : '') +
-      days.map((d) => '\nwriteNote ' + d.title + '\n' + d.content).join('');
-  }
-  if (r.count || !total) noteplan.writeNote(c.waitingNote, r.content);
-  days.forEach((d) => noteplan.writeNote(d.title, d.content));
-  const done = (total > 1 ? total + ' suivis résolus' : total ? 'Suivi résolu' : 'Suivi créé déjà résolu') + where;
+  if (dryRun) return r.count + ' suivi(s) résolu(s)' + (mail ? ' + archivage' : '') + ' : writeNote\n' + r.content;
+  noteplan.writeNote(c.note, r.content);
+  const done = r.count > 1 ? r.count + ' suivis résolus' : r.count ? 'Suivi résolu' : 'Suivi créé déjà résolu';
   const archive = mail ? gmail.archiveThread(tab) : '';
   ui.notify(done + ({
     archived: ', mail archivé.',
@@ -190,25 +151,25 @@ function run(argv) {
       }
       case 'resolve':
         return resolve(ui, c, currentItem(c.browser, c.aliases), dryRun);
-      case 'waiting-open': {
-        const url = noteplan.openNoteUrl(c.waitingNote);
+      case 'open': {
+        const url = noteplan.openNoteUrl(c.note);
         // NotePlan fermé : l'URL le lance, sans tri ni pastilles.
         if (!noteplan.isRunning()) {
           if (!dryRun) app.openLocation(url);
           return dryRun ? 'NotePlan fermé : ' + url : url;
         }
-        const content = noteplan.readNote(c.waitingNote);
+        const content = noteplan.readNote(c.note);
         if (content === null) {
-          throw new UserError('La note « ' + c.waitingNote + ' » n’existe pas encore : le premier fe en attente la créera.');
+          throw new UserError('La note « ' + c.note + ' » n’existe pas encore : le premier fe la créera.');
         }
-        const tidy = sortWaiting(content, '', new Date());
+        const tidy = sortFollow(content, { today: new Date() });
         if (dryRun) return (tidy === content ? 'inchangée' : 'writeNote') + ' + ' + url + '\n' + tidy;
-        if (tidy !== content) noteplan.writeNote(c.waitingNote, tidy);
+        if (tidy !== content) noteplan.writeNote(c.note, tidy);
         app.openLocation(url);
         return url;
       }
       default:
-        throw new UserError('Commande inconnue : « ' + cmd + ' » (copy, link, task, status, resolve, waiting-open).');
+        throw new UserError('Commande inconnue : « ' + cmd + ' » (copy, link, task, status, resolve, open).');
     }
   });
 }

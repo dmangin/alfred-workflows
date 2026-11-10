@@ -16,7 +16,7 @@ const require = (() => {
 
 const dates = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortWaiting, resolveWaiting, resolveDaily } = require('lib/follow');
+const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortBlock, sortFollow, resolveFollow } = require('lib/follow');
 const gmail = require('lib/sources/gmail');
 const wavebox = require('lib/wavebox');
 const { buildMarkdown, messageKey } = require('lib/sources/slack');
@@ -101,7 +101,7 @@ eq('URL ouverture de note', noteplan.openNoteUrl('En attente'), 'noteplan://x-ca
 eq('URL recherche', noteplan.searchUrl('FMfcgzAAAA'), 'noteplan://x-callback-url/search?text=FMfcgzAAAA');
 eq('tâche planifiée', noteplan.scheduled('- [ ] a', D(2026, 10, 1)), '- [ ] a >2026-10-01');
 
-// --- doublons dans la note d'attente ----------------------------------------
+// --- doublons dans la note de suivi ------------------------------------------
 const note = `# En attente de retour
 - [x] 01/10/2026: Suivre [@: fini](https://mail.google.com/mail/u/0/#inbox/KEYDONE0000000000) >2026-10-03
 - [ ] 02/10/2026: Suivre @bob [@: devis](https://mail.google.com/mail/u/0/#inbox/KEYOPEN0000000000) >2026-10-06
@@ -109,9 +109,14 @@ const note = `# En attente de retour
 eq('doublon : tâche ouverte', findOpenTask(note, 'KEYOPEN0000000000'), { created: '02/10/2026' });
 eq('doublon : tâche faite ignorée', findOpenTask(note, 'KEYDONE0000000000'), null);
 
-// --- tri de la note d'attente -----------------------------------------------
-const waitingNote = [
-  '---', 'icon: x', '---', '# En attente',
+// --- note de suivi : sections triées ------------------------------------------
+const followNote = [
+  '---', 'icon: x', '---', '# Suivi',
+  '## À faire',
+  '- [ ] 08/10/2026: Relancer x >2026-10-09',
+  '- [ ] 09/10/2026: Relancer y >2026-10-30',
+  '',
+  '## En attente',
   'intro libre',
   '- [ ] 01/10/2026: Suivre a >2026-10-03',
   '\t> 05/10/2026: relancé',
@@ -123,10 +128,16 @@ const waitingNote = [
   '',
   '## Terminé',
   '- [x] 01/09/2026: vieux >2026-12-31',
+  '- [x] 01/09/2026: plus vieux >2026-01-01',
   '',
 ].join('\n');
-eq('tri : décroissant, sous-lignes suivies, archives intactes', sortWaiting(waitingNote).split('\n'), [
-  '---', 'icon: x', '---', '# En attente',
+eq('tri : chaque section décroissante, sous-lignes suivies, archives intactes', sortFollow(followNote).split('\n'), [
+  '---', 'icon: x', '---', '# Suivi',
+  '## À faire',
+  '- [ ] 09/10/2026: Relancer y >2026-10-30',
+  '- [ ] 08/10/2026: Relancer x >2026-10-09',
+  '',
+  '## En attente',
   'intro libre',
   '- [ ] 04/10/2026: Suivre d >2026-11-05',
   '- [ ] 02/10/2026: Suivre b >2026-11-05',
@@ -138,15 +149,27 @@ eq('tri : décroissant, sous-lignes suivies, archives intactes', sortWaiting(wai
   '',
   '## Terminé',
   '- [x] 01/09/2026: vieux >2026-12-31',
+  '- [x] 01/09/2026: plus vieux >2026-01-01',
   '',
 ]);
-eq('tri : idempotent', sortWaiting(sortWaiting(waitingNote)), sortWaiting(waitingNote));
-eq('tri : insertion à sa place', sortWaiting('# W\n- [ ] 01/10/2026: x >2026-11-10\n- [ ] 01/10/2026: y >2026-10-01',
-  '- [ ] 09/11/2026: z >2026-10-15'),
-  '# W\n- [ ] 01/10/2026: x >2026-11-10\n- [ ] 09/11/2026: z >2026-10-15\n- [ ] 01/10/2026: y >2026-10-01');
-eq('tri : insertion dans une note sans tâche', sortWaiting('# W\n', '- [ ] t >2026-10-15'), '# W\n- [ ] t >2026-10-15\n');
-eq('tri : échéance = dernier >date de la ligne', sortWaiting('# W\n- [ ] a >2026-01-01 puis >2026-12-01\n- [ ] b >2026-06-01'),
-  '# W\n- [ ] a >2026-01-01 puis >2026-12-01\n- [ ] b >2026-06-01');
+eq('tri : idempotent', sortFollow(sortFollow(followNote)), sortFollow(followNote));
+eq('tri : insertion à sa place dans sa section',
+  sortFollow('# S\n## À faire\n- [ ] 01/10/2026: x >2026-11-10\n- [ ] 01/10/2026: y >2026-10-01\n## En attente\n- [ ] w >2026-10-20',
+    { add: { section: 'À faire', line: '- [ ] 09/11/2026: z >2026-10-15' } }),
+  '# S\n## À faire\n- [ ] 01/10/2026: x >2026-11-10\n- [ ] 09/11/2026: z >2026-10-15\n- [ ] 01/10/2026: y >2026-10-01\n## En attente\n- [ ] w >2026-10-20');
+eq('tri : ancienne note sans sections, son bloc va sous En attente',
+  sortFollow('---\nicon: x\n---\n# W\nintro\n- [ ] a >2026-11-01\n- [ ] b >2026-12-01\n\n## Terminé\n- [x] z').split('\n'),
+  ['---', 'icon: x', '---', '# W', '## À faire', '', '## En attente', 'intro', '- [ ] b >2026-12-01', '- [ ] a >2026-11-01', '', '## Terminé', '- [x] z']);
+eq('tri : note vide, sections créées et tâche ajoutée', sortFollow('', { add: { section: 'En attente', line: '- [ ] t >2026-10-15' } }),
+  '## À faire\n\n## En attente\n- [ ] t >2026-10-15\n');
+eq('tri : À faire seule, En attente ajoutée après',
+  sortFollow('# S\n## À faire\n- [ ] x >2026-11-10\n## Terminé'), '# S\n## À faire\n- [ ] x >2026-11-10\n\n## En attente\n## Terminé');
+eq('tri : section ajoutée par l\'utilisateur intacte',
+  sortFollow('# S\n## À faire\n## En attente\n- [ ] a >2026-01-01\n- [ ] b >2026-06-01\n## Perso\n- [ ] c >2026-01-01\n- [ ] d >2026-06-01'),
+  '# S\n## À faire\n## En attente\n- [ ] b >2026-06-01\n- [ ] a >2026-01-01\n## Perso\n- [ ] c >2026-01-01\n- [ ] d >2026-06-01');
+eq('tri : échéance = dernier >date de la ligne', sortBlock(['- [ ] a >2026-01-01 puis >2026-12-01', '- [ ] b >2026-06-01']),
+  ['- [ ] a >2026-01-01 puis >2026-12-01', '- [ ] b >2026-06-01']);
+eq('tri : insertion dans un bloc sans tâche', sortBlock(['', ''], '- [ ] t'), ['- [ ] t', '', '']);
 // --- pastilles d'échéance ---------------------------------------------------
 const today = D(2026, 11, 9, 23, 30); // lundi soir : seule la date compte
 eq('pastille : J+8, bleue', dueBadge('2026-11-17', today), '🔵');
@@ -169,14 +192,18 @@ eq('pastille : retirée si cochée', markTask('- [x] 28/10/2026: 🔴 Suivre >20
 eq('pastille : retirée si annulée', markTask('- [-] 🟠 Suivre >2026-11-05', today), '- [-] Suivre >2026-11-05');
 eq('pastille : sans date de création', markTask('* [ ] !! Suivre >2026-11-05', today), '* [ ] !! 🟠 Suivre >2026-11-05');
 eq('pastille : idempotente', markTask(markTask('- [ ] 01/11/2026: a >2026-11-05', today), today), '- [ ] 01/11/2026: 🟠 a >2026-11-05');
-eq('tri + pastilles : bloc seulement, ligne ajoutée comprise',
-  sortWaiting('# W\n- [ ] 01/10/2026: a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01',
-    '- [ ] 09/11/2026: c >2026-11-11', today),
-  '# W\n- [ ] 09/11/2026: 🟡 c >2026-11-11\n- [ ] 01/10/2026: 🔴 a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01');
+eq('tri + pastilles : sections triées seulement, ligne ajoutée comprise',
+  sortFollow('# W\n## À faire\n## En attente\n- [ ] 01/10/2026: a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01',
+    { add: { section: 'En attente', line: '- [ ] 09/11/2026: c >2026-11-11' }, today }),
+  '# W\n## À faire\n## En attente\n- [ ] 09/11/2026: 🟡 c >2026-11-11\n- [ ] 01/10/2026: 🔴 a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01');
 // --- résolution (fer) ---------------------------------------------------------
 const now = D(2026, 11, 10, 9, 5);
 const toResolve = [
   '# W',
+  '## À faire',
+  '- [ ] 05/11/2026: 🔴 Relancer z KEYRES0000000000) >2026-10-31',
+  '- [ ] 05/11/2026: 🟡 Relancer y >2026-11-12',
+  '## En attente',
   '- [ ] 01/11/2026: 🟠 Suivre a [@: x](https://mail.google.com/mail/u/0/#inbox/KEYRES0000000000) >2026-11-05',
   '\t> 04/11/2026: relancé',
   '',
@@ -188,12 +215,16 @@ const toResolve = [
   '## Annulé',
   '- [-] annulé KEYRES0000000000)',
 ].join('\n');
-eq('résolution : toutes les tâches ouvertes, sous-lignes, en tête de Terminé', resolveWaiting(toResolve, 'KEYRES0000000000', now), {
+eq('résolution : toutes les tâches ouvertes des deux sections, sous-lignes, en tête de Terminé', resolveFollow(toResolve, 'KEYRES0000000000', now), {
   content: [
     '# W',
+    '## À faire',
+    '- [ ] 05/11/2026: 🟡 Relancer y >2026-11-12',
+    '## En attente',
     '- [ ] 02/11/2026: 🔵 Suivre b >2026-12-20',
     '- [x] 01/10/2026: Suivre déjà fait KEYRES0000000000 >2026-10-02',
     '## Terminé',
+    '- [x] 05/11/2026: Relancer z KEYRES0000000000) >2026-10-31 @done(2026-11-10 09:05)',
     '- [x] 01/11/2026: Suivre a [@: x](https://mail.google.com/mail/u/0/#inbox/KEYRES0000000000) >2026-11-05 @done(2026-11-10 09:05)',
     '\t> 04/11/2026: relancé',
     '* [x] !! 03/11/2026: Suivre doublon KEYRES0000000000) >2026-11-12 @done(2026-11-10 09:05)',
@@ -201,23 +232,22 @@ eq('résolution : toutes les tâches ouvertes, sous-lignes, en tête de Terminé
     '## Annulé',
     '- [-] annulé KEYRES0000000000)',
   ].join('\n'),
-  count: 2,
+  count: 3,
 });
-eq('résolution : absente, rien ne change', resolveWaiting(toResolve, 'KEYNONE000000000', now), { content: toResolve, count: 0 });
-eq('résolution : clé préfixe ignorée', resolveWaiting(toResolve, 'KEYRES000000000', now).count, 0);
-eq('résolution : créée résolue, section Terminé ajoutée', resolveWaiting('# W\n- [ ] 01/11/2026: Suivre a >2026-11-20\n\n',
-  'KEYNEW0000000000', now, '- [ ] 10/11/2026: Suivre @bob [@: y](https://mail.google.com/mail/u/0/#inbox/KEYNEW0000000000)'), {
-  content: '# W\n- [ ] 01/11/2026: 🔵 Suivre a >2026-11-20\n\n## Terminé\n' +
+eq('résolution : absente, rien ne change', resolveFollow(toResolve, 'KEYNONE000000000', now), { content: toResolve, count: 0 });
+eq('résolution : clé préfixe ignorée', resolveFollow(toResolve, 'KEYRES000000000', now).count, 0);
+eq('résolution : créée résolue, section Terminé ajoutée',
+  resolveFollow('# W\n## À faire\n## En attente\n- [ ] 01/11/2026: Suivre a >2026-11-20\n\n',
+    'KEYNEW0000000000', now, '- [ ] 10/11/2026: Suivre @bob [@: y](https://mail.google.com/mail/u/0/#inbox/KEYNEW0000000000)'), {
+  content: '# W\n## À faire\n## En attente\n- [ ] 01/11/2026: 🔵 Suivre a >2026-11-20\n\n## Terminé\n' +
     '- [x] 10/11/2026: Suivre @bob [@: y](https://mail.google.com/mail/u/0/#inbox/KEYNEW0000000000) @done(2026-11-10 09:05)\n',
   count: 0,
 });
 eq('résolution : dernière tâche, la ligne vide avant Terminé reste',
-  resolveWaiting('# W\n- [ ] a >2026-12-01\n- [ ] b KEYEND0000000000 >2026-11-01\n\n## Terminé\n', 'KEYEND0000000000', now).content,
-  '# W\n- [ ] 🔵 a >2026-12-01\n\n## Terminé\n- [x] b KEYEND0000000000 >2026-11-01 @done(2026-11-10 09:05)\n');
-eq('résolution du jour : sur place, indentée comprise, @done',
-  resolveDaily('# x\n- [ ] Relancer a KEYDAY0000000000)\n\t* [ ] sous KEYDAY0000000000)\n- [x] fait KEYDAY0000000000)\n- [ ] autre', 'KEYDAY0000000000', now),
-  { content: '# x\n- [x] Relancer a KEYDAY0000000000) @done(2026-11-10 09:05)\n\t* [x] sous KEYDAY0000000000) @done(2026-11-10 09:05)\n- [x] fait KEYDAY0000000000)\n- [ ] autre', count: 2 });
-eq('résolution du jour : absente', resolveDaily('- [ ] autre KEYDAY00000000000)', 'KEYDAY0000000000', now).count, 0);
+  resolveFollow('# W\n## À faire\n## En attente\n- [ ] a >2026-12-01\n- [ ] b KEYEND0000000000 >2026-11-01\n\n## Terminé\n', 'KEYEND0000000000', now).content,
+  '# W\n## À faire\n## En attente\n- [ ] 🔵 a >2026-12-01\n\n## Terminé\n- [x] b KEYEND0000000000 >2026-11-01 @done(2026-11-10 09:05)\n');
+eq('résolution : hors sections triées ignorée',
+  resolveFollow('# W\n## À faire\n## En attente\n## Perso\n- [ ] p KEYOUT0000000000)', 'KEYOUT0000000000', now).count, 0);
 const L = (name, inNav = false) => ({ name, inNav });
 eq('libellés : système ignorés', gmail.userLabels([L('Boîte de réception'), L('projets/a'), L('Inbox'), L('brouillons'), L('Messages envoyés')]), ['projets/a']);
 eq('libellés : aucun à soi', gmail.userLabels([L('Boîte de réception'), L('Drafts')]), []);

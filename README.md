@@ -13,7 +13,7 @@ lib partagée et testée.
 | | `fe <jours> <prio> <action>` | tâche de suivi pour l'onglet actif : message Slack survolé, conversation Gmail ou page |
 | | `fes` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
 | | `fer` | résout les suivis de l'onglet actif et archive le mail |
-| | `feg`, Hyper+`A` | trie la note d'attente, met à jour ses pastilles et l'ouvre |
+| | `feg`, Hyper+`A` | range la note de suivi, met à jour ses pastilles et l'ouvre |
 | **Wavebox Tabs** | Hyper+`M`/`S`/`W`/`C`, Hyper+`N` | onglet Gmail/Slack/WhatsApp/Agenda (onglet suivant du même service s'il est déjà actif), NotePlan |
 | **Paste** | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
 | *Gmail Searches* | `gmg` | recherches Gmail prédéfinies — workflow personnel sans code, hors dépôt |
@@ -21,34 +21,50 @@ lib partagée et testée.
 Mots-clés en anglais derrière `fe` (*follow email*) : `c` *copy*, `s` *search*,
 `r` *resolve*, `g` *go*.
 
-Tâche de suivi : `- [ ] !!! 28/09/2026: Suivre @auteur [@: titre](url)` — date de
-création, priorité et action optionnelles. Deux destinations, selon l'action :
+Tâche de suivi : `- [ ] !!! 28/09/2026: Suivre @auteur [@: titre](url) >2026-09-30`
+— date de création, priorité et action optionnelles. Toutes vont dans la note
+de suivi (`Suivi`), dans une section selon l'action :
 
-| Action | Type | Destination | Échéance sans nombre de jours |
-|---|---|---|---|
-| vide ou commençant par le mot « Suivre » (`fe`, `fe 3 suivre devis`) | en attente de retour | à sa place dans la note d'attente, `… >AAAA-MM-JJ` | délai d'attente (2 jours ouvrés) |
-| toute autre (`fe relancer Bob`) | action | note du jour à J+N | aujourd'hui |
+| Action | Section | Échéance sans nombre de jours |
+|---|---|---|
+| toute autre que « Suivre » (`fe relancer Bob`) | `## À faire` | aujourd'hui |
+| vide ou commençant par le mot « Suivre » (`fe`, `fe 3 suivre devis`) | `## En attente` (de retour) | délai d'attente (2 jours ouvrés) |
+
+Une tâche tapée à la main dans une note du jour y reste : seul ce que `fe`
+crée depuis un onglet (mail, message Slack, page) va dans la note de suivi.
 
 **Onglet actif** : un onglet Slack avec un message survolé (ou sélectionné au
 clavier) donne le lien de ce message ; une conversation Gmail ouverte, son lien
 et son auteur ; tout le reste — un onglet Slack sans message survolé compris —
 le lien de la page (`🌐`).
 
-La note d'attente est commune à tous les canaux et créée si absente. Elle est
-tenue triée par échéance décroissante : les plus lointaines en haut, les plus
-anciennes en bas ; à échéance égale, la plus récente d'abord ; sans échéance,
-tout en bas. Chaque `fe` en attente réécrit la note avec la nouvelle tâche à sa
-place, et `feg` la retrie (après une échéance changée à la main).
-Seul le bloc sous le titre est trié, tâches cochées ou annulées comprises :
-une tâche emporte les lignes qui la suivent (sous-lignes `> …`, texte) ; les
-propriétés, le titre, ce qui précède la première tâche et les sections
-suivantes (`## Terminé`, `## Annulé`) ne bougent pas. Chaque tâche ouverte du
-bloc porte une pastille après sa date de création, recalculée à chaque `fe` et
-`feg` : 🔵 échéance au-delà de J+7, 🟡 d'aujourd'hui à J+7, 🟠 en retard de 1 à
-7 jours, 🔴 au-delà (jours calendaires), ⚪ sans échéance ; rien sur une tâche
-cochée ou annulée.
+La note de suivi est commune à tous les canaux et créée si absente :
+
+```
+# Suivi            (propriétés --- éventuelles avant)
+## À faire         triée, pastilles
+## En attente      triée, pastilles
+## Terminé         intacte
+## Annulé          intacte
+```
+
+Les deux premières sections sont tenues triées par échéance décroissante : les
+plus lointaines en haut, les plus anciennes en bas ; à échéance égale, la plus
+récente d'abord ; sans échéance, tout en bas. Chaque `fe` réécrit la note avec
+la nouvelle tâche à sa place, et `feg` la retrie (après une échéance changée à
+la main). Tâches cochées ou annulées comprises : une tâche emporte les lignes
+qui la suivent (sous-lignes `> …`, texte) ; les propriétés, le titre, ce qui
+précède la première tâche d'une section et les autres sections (`## Terminé`,
+`## Annulé`, toute section ajoutée) ne bougent pas. Une section triée absente
+est recréée ; une ancienne note sans sections voit son bloc de tête rangé sous
+`## En attente`. Chaque tâche ouverte d'une section triée porte une pastille
+après sa date de création, recalculée à chaque `fe`, `fer` et `feg` : 🔵
+échéance au-delà de J+7, 🟡 d'aujourd'hui à J+7, 🟠 en retard de 1 à 7 jours,
+🔴 au-delà (jours calendaires), ⚪ sans échéance ; rien sur une tâche cochée ou
+annulée. Une tâche planifiée `>date` reste visible dans la note du jour de son
+échéance (références de NotePlan).
 NotePlan fermé, `feg` ouvre la note sans la toucher. Si le
-message y a déjà une tâche ouverte, un dialogue « Déjà en attente depuis le … »
+message y a déjà une tâche ouverte, un dialogue « Déjà suivi depuis le … »
 propose de créer quand même (↩) ou d'annuler (Échap). Le message est
 identifié par l'identifiant de conversation Gmail (`FMfcg…`, le même quels que
 soient le libellé et le compte `u/N` de l'URL), l'identifiant du message Slack
@@ -56,13 +72,11 @@ soient le libellé et le compte `u/N` de l'URL), l'identifiant du message Slack
 `fes` cherche dans NotePlan. Une URL n'est reconnue qu'à l'identique
 (`…/a` ne trouve ni `…/abc` ni `…/a/b`) ; une liste Gmail n'identifie rien.
 
-**Résolution** (`fer`) : toutes les tâches ouvertes qui citent le message de
-l'onglet actif sont cochées et datées `@done(AAAA-MM-JJ HH:MM)` comme dans
-NotePlan. Dans la note d'attente (bloc trié), elles partent avec leurs
-sous-lignes en tête de `## Terminé` (section créée en fin de note si absente) ;
-dans les notes du jour (tâches d'action), elles sont cochées sur place, de J-60
-à J+30 (réglable, environ 18 ms par jour lu). Aucune : un dialogue propose
-« Créer résolu » (tâche déjà cochée dans la note d'attente, pour la
+**Résolution** (`fer`) : toutes les tâches ouvertes des sections triées qui
+citent le message de l'onglet actif sont cochées, datées
+`@done(AAAA-MM-JJ HH:MM)` comme dans NotePlan, et déplacées avec leurs
+sous-lignes en tête de `## Terminé` (section créée en fin de note si absente).
+Aucune : un dialogue propose « Créer résolu » (tâche déjà cochée, pour la
 traçabilité) ou « Ne rien faire ». Sur une conversation Gmail, `fer` l'archive
 ensuite (bouton Archiver de la page), seulement si elle porte au moins un
 libellé à soi — pas un libellé système (boîte de réception, brouillons,
@@ -114,10 +128,9 @@ Réglée dans Alfred (bouton « Configure Workflow… »), stockée dans le
 | `gca_conf_gmail_account` | Follow, Wavebox Tabs | adresse du compte Gmail : départage plusieurs comptes ouverts (vide = premier onglet Gmail) |
 | `gca_conf_slack_workspace` | Wavebox Tabs | nom de l'espace Slack tel qu'il figure dans le titre de l'onglet (vide = premier onglet Slack) |
 | `gca_conf_gmail_app` | Follow | navigateur à piloter (défaut `Wavebox`) |
-| `gca_conf_waiting_note` | Follow | titre de la note d'attente (défaut `En attente de retour`) |
+| `gca_conf_waiting_note` | Follow | titre de la note de suivi (défaut `Suivi` ; nom historique de la variable) |
 | `gca_conf_waiting_verb` | Follow | verbe par défaut, qui marque aussi les tâches en attente (défaut `Suivre`) |
 | `gca_conf_waiting_days` | Follow | délai par défaut d'une tâche en attente, en jours ouvrés (défaut `2`) |
-| `gca_conf_resolve_days_before`, `gca_conf_resolve_days_after` | Follow | fenêtre des notes du jour où `fer` cherche (défaut J-`60` à J+`30`) |
 | `gca_conf_gmail_aliases` | Follow | alias des expéditeurs, une ligne `adresse = @alias` par correspondant |
 
 ## Câblage Alfred
@@ -160,9 +173,9 @@ ni ajout.
 
 - Wavebox : `View › Developer › Allow JavaScript from Apple Events`.
 - macOS : Alfred autorisé dans Automation (Wavebox, NotePlan).
-- NotePlan 3.22 ou plus : la note d'attente est lue et réécrite par son
-  dictionnaire AppleScript (`readNote`, `writeNote` ; une note du jour par son
-  titre `AAAAMMJJ`), que JXA ne sait pas
+- NotePlan 3.22 ou plus : la note de suivi est lue et réécrite par son
+  dictionnaire AppleScript (`readNote`, `writeNote` ; il accepte aussi une note
+  du jour par son titre `AAAAMMJJ`), que JXA ne sait pas
   appeler — `lib/noteplan.js` envoie les événements Apple au pid de l'app
   (l'app Claude lance aussi une instance « serveur MCP » de NotePlan). Tout le
   reste passe par l'URL scheme.

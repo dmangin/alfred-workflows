@@ -143,6 +143,34 @@ s'il a un lien `#label/<nom>` dans la barre latérale (un libellé perso nommé
 « En attente », par exemple). Sans libellé à soi, pas d'archivage, et la
 notification le dit.
 
+**Note de suivi unique (10/11/2026)** : la note d'attente devient « Suivi » et
+reçoit tous les `fe`, pas seulement les « Suivre ». Choix de Damien : deux
+sections triées et colorées, `## À faire` (actions, ce qui dépend de lui) puis
+`## En attente` (de retour), puis `## Terminé` et `## Annulé` intactes ; une
+tâche tapée à la main dans une note du jour y reste, seul ce que `fe` crée
+depuis un onglet (mail, Slack, page) va dans « Suivi ». Gains : un seul
+endroit trié, `fer` ne lit plus qu'une note (fin du parcours J-60..J+30 et de
+ses réglages), doublons détectés pour toutes les tâches. Une tâche planifiée
+`>date` reste visible dans la note du jour de son échéance. Risque assumé :
+`writeNote` réécrit toute la note, mais Damien la modifie rarement sur mobile
+et NotePlan résout les conflits iCloud. Le tri porte sur des sections nommées
+(`sortFollow`) ; une section triée absente est recréée, et une ancienne note
+sans sections voit son bloc de tête rangé sous `## En attente`. La variable
+`gca_conf_waiting_note` garde son nom (défaut `Suivi`) ; la commande
+`waiting-open` devient `open`. Migration : note renommée par NotePlan (liens
+`[[…]]` mis à jour), puis les tâches d'action ouvertes avec lien des notes du
+jour déplacées vers `## À faire`, avec `>date` = leur note du jour ; essai à
+blanc vérifié (aucune ligne perdue ni dupliquée), relecture avant écriture
+contre les sauvegardes, résultat identique à l'aperçu. Erreur de périmètre :
+le critère « tâche ouverte avec un lien » a aussi pris 59 tâches récurrentes
+insérées chaque mois par un modèle NotePlan (auto-insert, pointages et
+fichiers à mettre à jour, dont d'anciennes versions du modèle repérées comme
+lignes identiques répétées d'un mois à l'autre). Elles ont été rendues à leurs
+11 notes du jour, à leur place d'origine, à partir des sauvegardes ; restent
+72 vraies tâches `fe` migrées. Leçon : une tâche qui revient à l'identique
+chaque mois vient d'un modèle et doit rester dans sa note du jour. Archivage de `## Terminé` : plus
+tard.
+
 **Onglet actif masqué (10/11/2026)** : `fe`, `fec`, `fer`… ne suivaient plus
 que des mails, pendant une visio. La vignette flottante de Meet (incrustation
 en bas à droite) est, pour AppleScript, une fenêtre Wavebox à un onglet

@@ -144,7 +144,7 @@
 				<key>keyword</key>
 				<string>fer</string>
 				<key>subtext</key>
-				<string>Résout les suivis de l’onglet actif (note d’attente et notes du jour) et archive le mail</string>
+				<string>Résout les suivis de l’onglet actif (en tête de Terminé) et archive le mail</string>
 				<key>text</key>
 				<string>Follow : résolu</string>
 				<key>withspace</key>
@@ -290,9 +290,9 @@
 				<key>keyword</key>
 				<string>feg</string>
 				<key>subtext</key>
-				<string>Trie la note d’attente, met à jour ses pastilles 🔵🟡🟠🔴⚪ et l’ouvre</string>
+				<string>Range la note de suivi (À faire, En attente), met à jour ses pastilles 🔵🟡🟠🔴⚪ et l’ouvre</string>
 				<key>text</key>
-				<string>Follow : en attente</string>
+				<string>Follow : note de suivi</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -330,7 +330,7 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" waiting-open</string>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" open</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -353,7 +353,7 @@
 				<key>keyword</key>
 				<string>fe</string>
 				<key>subtext</key>
-				<string>fe &lt;jours&gt; &lt;priorité&gt; &lt;action&gt; — message Slack survolé, mail ou page ; sans action ou « Suivre … » : note d’attente, sinon note du jour</string>
+				<string>fe &lt;jours&gt; &lt;priorité&gt; &lt;action&gt; — message Slack survolé, mail ou page ; sans action ou « Suivre … » : En attente, sinon À faire</string>
 				<key>text</key>
 				<string>Follow</string>
 				<key>withspace</key>
@@ -486,10 +486,9 @@
 	<string>Follow suit l'onglet actif de Wavebox : le message Slack survolé, sinon la conversation Gmail ouverte, sinon la page.
 fec, ⌥⌘, : copie le lien de l'onglet actif (avec l'auteur d'un mail) ; Cmd+V pour le coller.
 ::mp : colle ce même lien au curseur.
-fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », à sa place dans la note d'attente
-(triée par échéance décroissante), échéance &gt;J+N
-(délai par défaut configurable) ; autre action : note du jour J+N (aujourd'hui par défaut).
-fes : recherche NotePlan sur l'onglet. fer : coche ses suivis ouverts (@done ; en tête de Terminé dans la note d'attente, sur place dans les notes du jour de J-60 à J+30 ; aucun : propose d'en créer un déjà résolu) et archive le mail s'il porte un libellé. feg, Hyper+A : trie la note d'attente, met à jour ses pastilles (🔵 échéance au-delà de 7 jours, 🟡 d'ici 7 jours, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, ⚪ sans échéance) et l'ouvre.
+fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : dans la note de suivi (« Suivi »), à sa place par échéance &gt;J+N : sans action ou « Suivre … », section En attente
+(délai par défaut configurable) ; autre action : section À faire (aujourd'hui par défaut).
+fes : recherche NotePlan sur l'onglet. fer : coche ses suivis ouverts (@done, en tête de Terminé ; aucun : propose d'en créer un déjà résolu) et archive le mail s'il porte un libellé. feg, Hyper+A : trie les sections de la note de suivi, met à jour ses pastilles (🔵 échéance au-delà de 7 jours, 🟡 d'ici 7 jours, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, ⚪ sans échéance) et l'ouvre.
 Jours ouvrés : un samedi/dimanche compte comme le lundi suivant.
 
 Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (repo 2609-alfred-jxa).</string>
@@ -632,7 +631,7 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>En attente de retour</string>
+				<string>Suivi</string>
 				<key>placeholder</key>
 				<string></string>
 				<key>required</key>
@@ -641,9 +640,9 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>Titre de la note où vont les tâches en attente de retour (tous canaux), triée par échéance. Créée si absente.</string>
+			<string>Titre de la note où vont toutes les tâches de fe (sections À faire et En attente, triées par échéance). Créée si absente.</string>
 			<key>label</key>
-			<string>Note d’attente</string>
+			<string>Note de suivi</string>
 			<key>type</key>
 			<string>textfield</string>
 			<key>variable</key>
@@ -662,7 +661,7 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>Verbe par défaut des tâches. Action vide ou commençant par ce mot : tâche en attente ; sinon tâche d’action, dans la note du jour.</string>
+			<string>Verbe par défaut des tâches. Action vide ou commençant par ce mot : section En attente ; sinon À faire.</string>
 			<key>label</key>
 			<string>Verbe d’attente</string>
 			<key>type</key>
@@ -690,48 +689,6 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<string>textfield</string>
 			<key>variable</key>
 			<string>gca_conf_waiting_days</string>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>default</key>
-				<string>60</string>
-				<key>placeholder</key>
-				<string></string>
-				<key>required</key>
-				<false/>
-				<key>trim</key>
-				<true/>
-			</dict>
-			<key>description</key>
-			<string>fer cherche aussi les tâches d’action dans les notes du jour, de J-N (ce réglage) à J+N (le suivant).</string>
-			<key>label</key>
-			<string>Résolution : jours avant</string>
-			<key>type</key>
-			<string>textfield</string>
-			<key>variable</key>
-			<string>gca_conf_resolve_days_before</string>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>default</key>
-				<string>30</string>
-				<key>placeholder</key>
-				<string></string>
-				<key>required</key>
-				<false/>
-				<key>trim</key>
-				<true/>
-			</dict>
-			<key>description</key>
-			<string>Fin de la fenêtre des notes du jour de fer, en jours après aujourd’hui.</string>
-			<key>label</key>
-			<string>Résolution : jours après</string>
-			<key>type</key>
-			<string>textfield</string>
-			<key>variable</key>
-			<string>gca_conf_resolve_days_after</string>
 		</dict>
 		<dict>
 			<key>config</key>
