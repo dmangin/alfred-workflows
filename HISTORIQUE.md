@@ -143,6 +143,14 @@ s'il a un lien `#label/<nom>` dans la barre latérale (un libellé perso nommé
 « En attente », par exemple). Sans libellé à soi, pas d'archivage, et la
 notification le dit.
 
+**Onglet actif masqué (10/11/2026)** : `fe`, `fec`, `fer`… ne suivaient plus
+que des mails, pendant une visio. La vignette flottante de Meet (incrustation
+en bas à droite) est, pour AppleScript, une fenêtre Wavebox à un onglet
+`about:blank`, toujours au premier plan ; le repli prévu pour ce cas sautait
+directement au premier onglet Gmail. Désormais, l'onglet actif est celui de la
+première fenêtre non vide dans l'ordre d'empilement, et Gmail n'est qu'un
+dernier recours.
+
 **Deux NotePlan (06/11/2026)** : `fe` en attente ne faisait plus rien. L'app
 Claude lance désormais le binaire de NotePlan en serveur MCP (`NotePlan
 mcp-server`), que macOS enregistre comme une seconde app « NotePlan » ;

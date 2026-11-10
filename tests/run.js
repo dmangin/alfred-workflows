@@ -18,6 +18,7 @@ const dates = require('lib/dates');
 const noteplan = require('lib/noteplan');
 const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortWaiting, resolveWaiting, resolveDaily } = require('lib/follow');
 const gmail = require('lib/sources/gmail');
+const wavebox = require('lib/wavebox');
 const { buildMarkdown, messageKey } = require('lib/sources/slack');
 
 let passed = 0;
@@ -222,6 +223,24 @@ eq('libellés : système ignorés', gmail.userLabels([L('Boîte de réception'),
 eq('libellés : aucun à soi', gmail.userLabels([L('Boîte de réception'), L('Drafts')]), []);
 eq('libellés : nom système mais dans la barre latérale', gmail.userLabels([L('En attente', true)]), ['En attente']);
 eq('libellés : nom proche d\'un système', gmail.userLabels([L('Brouillons/vieux')]), ['Brouillons/vieux']);
+// --- onglet actif de Wavebox (faux navigateur) ----------------------------------
+// Fenêtres dans l'ordre d'empilement ; windows()/windows[i], tabs()/tabs[i] comme en JXA.
+const tabOf = (url, title = '') => ({ url: () => url, title: () => title });
+const winOf = (tabs, active = 0) => {
+  const list = Object.assign(() => tabs, tabs);
+  return { tabs: list, activeTab: tabs[active] };
+};
+const fakeBrowser = (...wins) => ({ windows: Object.assign(() => wins, wins) });
+const meet = winOf([tabOf('about:blank')]); // vignette flottante d'une visio Meet
+const gmailT = tabOf('https://mail.google.com/mail/u/0/#inbox', 'Boîte de réception');
+const jira = tabOf('https://exemple.test/browse/ABC-1', 'Ticket');
+const gmailSpec = { url: 'https://mail.google.com/', title: '' };
+eq('onglet actif : fenêtre de premier plan', wavebox.activeTab(fakeBrowser(winOf([gmailT, jira], 1)), gmailSpec).url(), jira.url());
+eq('onglet actif : vignette Meet devant, onglet de la fenêtre suivante',
+  wavebox.activeTab(fakeBrowser(meet, winOf([gmailT, jira], 1)), gmailSpec).url(), jira.url());
+eq('onglet actif : tout vide, repli sur Gmail',
+  wavebox.activeTab(fakeBrowser(meet, winOf([tabOf('about:blank'), gmailT], 0)), gmailSpec).url(), gmailT.url());
+eq('onglet actif : tout vide, sans Gmail', wavebox.activeTab(fakeBrowser(meet), gmailSpec).url(), 'about:blank');
 eq('doublon : marqueur *, sans date', findOpenTask(note, 'KEYSTAR0000000000'), { created: '' });
 const web = `- [ ] 03/11/2026: Suivre [🌐 Ticket](https://exemple.test/browse/ABC-12) >2026-11-05
 - [ ] 03/11/2026: Suivre [🌐 Vue](https://exemple.test/view?id=2&x=1) >2026-11-05
