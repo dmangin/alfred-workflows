@@ -120,6 +120,22 @@ Après essai, toute tâche ouverte a sa pastille : 🔵 au-delà de J+7 (bleu
 plutôt que vert, qui se lirait « fait »), ⚪ sans échéance — une tâche que
 NotePlan ne remontera dans aucune note du jour, à planifier.
 
+**Résolution (10/11/2026)** : `fer` (*resolve* : les mots-clés suivent
+l'anglais de `fe`, *follow email* — `c` *copy*, `s` *search*, `g` *go*) clôt un
+suivi depuis le mail. Choix de Damien : toutes les tâches ouvertes qui citent
+le message sont résolues (doublons compris), cochées `@done(…)` au format de
+NotePlan et déplacées en tête de `## Terminé`, comme il le faisait à la main ;
+sans tâche, un dialogue propose d'en créer une déjà résolue, pour la
+traçabilité. Le mail est ensuite archivé : clic simulé (mousedown, mouseup,
+click) sur le bouton Archiver visible (`act="7"`), repéré sans clic sur une
+conversation ouverte. Les tâches d'action, dans les notes du jour, sont aussi
+résolues : `readNote`/`writeNote` acceptent une note du jour par son titre
+`AAAAMMJJ` (Damien l'avait déjà fait ; vérifié par une note jetable au
+31/12/2099). Sans savoir à quelle date l'action a été programmée, `fer` lit
+toutes les notes de J-60 à J+30 : 18 ms par note, 1,6 s en tout ; une année
+entière en prendrait 7. Cochées sur place : une note du jour n'a pas de section
+Terminé.
+
 **Deux NotePlan (06/11/2026)** : `fe` en attente ne faisait plus rien. L'app
 Claude lance désormais le binaire de NotePlan en serveur MCP (`NotePlan
 mcp-server`), que macOS enregistre comme une seconde app « NotePlan » ;

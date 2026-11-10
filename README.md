@@ -12,10 +12,14 @@ lib partagée et testée.
 | | `::mp` | colle ce même lien au curseur — message Slack non : tapé ailleurs, Slack perd le survol (utiliser `⌥⌘,`) |
 | | `fe <jours> <prio> <action>` | tâche de suivi pour l'onglet actif : message Slack survolé, conversation Gmail ou page |
 | | `fes` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
+| | `fer` | résout les suivis de l'onglet actif et archive le mail |
 | | `feg`, Hyper+`A` | trie la note d'attente, met à jour ses pastilles et l'ouvre |
 | **Wavebox Tabs** | Hyper+`M`/`S`/`W`/`C`, Hyper+`N` | onglet Gmail/Slack/WhatsApp/Agenda (onglet suivant du même service s'il est déjà actif), NotePlan |
 | **Paste** | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
 | *Gmail Searches* | `gmg` | recherches Gmail prédéfinies — workflow personnel sans code, hors dépôt |
+
+Mots-clés en anglais derrière `fe` (*follow email*) : `c` *copy*, `s` *search*,
+`r` *resolve*, `g` *go*.
 
 Tâche de suivi : `- [ ] !!! 28/09/2026: Suivre @auteur [@: titre](url)` — date de
 création, priorité et action optionnelles. Deux destinations, selon l'action :
@@ -51,6 +55,17 @@ soient le libellé et le compte `u/N` de l'URL), l'identifiant du message Slack
 (`p1700…`) ou, pour toute autre page, son URL complète ; c'est aussi ce que
 `fes` cherche dans NotePlan. Une URL n'est reconnue qu'à l'identique
 (`…/a` ne trouve ni `…/abc` ni `…/a/b`) ; une liste Gmail n'identifie rien.
+
+**Résolution** (`fer`) : toutes les tâches ouvertes qui citent le message de
+l'onglet actif sont cochées et datées `@done(AAAA-MM-JJ HH:MM)` comme dans
+NotePlan. Dans la note d'attente (bloc trié), elles partent avec leurs
+sous-lignes en tête de `## Terminé` (section créée en fin de note si absente) ;
+dans les notes du jour (tâches d'action), elles sont cochées sur place, de J-60
+à J+30 (réglable, environ 18 ms par jour lu). Aucune : un dialogue propose
+« Créer résolu » (tâche déjà cochée dans la note d'attente, pour la
+traçabilité) ou « Ne rien faire ». Sur une conversation Gmail, `fer` l'archive
+ensuite (bouton Archiver de la page) ; rien n'est archivé avec « Ne rien
+faire ».
 
 **Auteur** (`fe`) : premier expéditeur de la conversation Gmail ouverte,
 lu dans la page. Son alias vient de la table `gca_conf_gmail_aliases`
@@ -99,6 +114,7 @@ Réglée dans Alfred (bouton « Configure Workflow… »), stockée dans le
 | `gca_conf_waiting_note` | Follow | titre de la note d'attente (défaut `En attente de retour`) |
 | `gca_conf_waiting_verb` | Follow | verbe par défaut, qui marque aussi les tâches en attente (défaut `Suivre`) |
 | `gca_conf_waiting_days` | Follow | délai par défaut d'une tâche en attente, en jours ouvrés (défaut `2`) |
+| `gca_conf_resolve_days_before`, `gca_conf_resolve_days_after` | Follow | fenêtre des notes du jour où `fer` cherche (défaut J-`60` à J+`30`) |
 | `gca_conf_gmail_aliases` | Follow | alias des expéditeurs, une ligne `adresse = @alias` par correspondant |
 
 ## Câblage Alfred
@@ -119,7 +135,7 @@ absolu** : modifier un `.js` agit immédiatement, sans réimport.
 `make pull` les recopie ici. Les icônes de Wavebox et NotePlan sont extraites des
 applications installées ; Slack, Gmail, WhatsApp, Agenda et le presse-papier
 de Paste sont des glyphes SVG dessinés dans le script. Une icône propre à un
-objet Alfred (ici `fec`, `⌥⌘,`, `::mp`, `fe`, `fes`, `feg` et Hyper+`A` en Wavebox →
+objet Alfred (ici `fec`, `⌥⌘,`, `::mp`, `fe`, `fes`, `fer`, `feg` et Hyper+`A` en Wavebox →
 NotePlan) est un fichier `<UID>.png` dans le
 dossier du workflow. `tools/icons.py preview <dossier>` produit un aperçu sans
 toucher à Alfred.
@@ -142,7 +158,8 @@ ni ajout.
 - Wavebox : `View › Developer › Allow JavaScript from Apple Events`.
 - macOS : Alfred autorisé dans Automation (Wavebox, NotePlan).
 - NotePlan 3.22 ou plus : la note d'attente est lue et réécrite par son
-  dictionnaire AppleScript (`readNote`, `writeNote`), que JXA ne sait pas
+  dictionnaire AppleScript (`readNote`, `writeNote` ; une note du jour par son
+  titre `AAAAMMJJ`), que JXA ne sait pas
   appeler — `lib/noteplan.js` envoie les événements Apple au pid de l'app
   (l'app Claude lance aussi une instance « serveur MCP » de NotePlan). Tout le
   reste passe par l'URL scheme.

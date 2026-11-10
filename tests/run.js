@@ -16,7 +16,7 @@ const require = (() => {
 
 const dates = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortWaiting } = require('lib/follow');
+const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortWaiting, resolveWaiting, resolveDaily } = require('lib/follow');
 const gmail = require('lib/sources/gmail');
 const { buildMarkdown, messageKey } = require('lib/sources/slack');
 
@@ -172,6 +172,51 @@ eq('tri + pastilles : bloc seulement, ligne ajoutée comprise',
   sortWaiting('# W\n- [ ] 01/10/2026: a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01',
     '- [ ] 09/11/2026: c >2026-11-11', today),
   '# W\n- [ ] 09/11/2026: 🟡 c >2026-11-11\n- [ ] 01/10/2026: 🔴 a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01');
+// --- résolution (fer) ---------------------------------------------------------
+const now = D(2026, 11, 10, 9, 5);
+const toResolve = [
+  '# W',
+  '- [ ] 01/11/2026: 🟠 Suivre a [@: x](https://mail.google.com/mail/u/0/#inbox/KEYRES0000000000) >2026-11-05',
+  '\t> 04/11/2026: relancé',
+  '',
+  '- [ ] 02/11/2026: 🔵 Suivre b >2026-12-20',
+  '- [x] 01/10/2026: Suivre déjà fait KEYRES0000000000 >2026-10-02',
+  '* [ ] !! 03/11/2026: Suivre doublon KEYRES0000000000) >2026-11-12',
+  '## Terminé',
+  '- [x] vieux @done(2026-10-01 10:00)',
+  '## Annulé',
+  '- [-] annulé KEYRES0000000000)',
+].join('\n');
+eq('résolution : toutes les tâches ouvertes, sous-lignes, en tête de Terminé', resolveWaiting(toResolve, 'KEYRES0000000000', now), {
+  content: [
+    '# W',
+    '- [ ] 02/11/2026: 🔵 Suivre b >2026-12-20',
+    '- [x] 01/10/2026: Suivre déjà fait KEYRES0000000000 >2026-10-02',
+    '## Terminé',
+    '- [x] 01/11/2026: Suivre a [@: x](https://mail.google.com/mail/u/0/#inbox/KEYRES0000000000) >2026-11-05 @done(2026-11-10 09:05)',
+    '\t> 04/11/2026: relancé',
+    '* [x] !! 03/11/2026: Suivre doublon KEYRES0000000000) >2026-11-12 @done(2026-11-10 09:05)',
+    '- [x] vieux @done(2026-10-01 10:00)',
+    '## Annulé',
+    '- [-] annulé KEYRES0000000000)',
+  ].join('\n'),
+  count: 2,
+});
+eq('résolution : absente, rien ne change', resolveWaiting(toResolve, 'KEYNONE000000000', now), { content: toResolve, count: 0 });
+eq('résolution : clé préfixe ignorée', resolveWaiting(toResolve, 'KEYRES000000000', now).count, 0);
+eq('résolution : créée résolue, section Terminé ajoutée', resolveWaiting('# W\n- [ ] 01/11/2026: Suivre a >2026-11-20\n\n',
+  'KEYNEW0000000000', now, '- [ ] 10/11/2026: Suivre @bob [@: y](https://mail.google.com/mail/u/0/#inbox/KEYNEW0000000000)'), {
+  content: '# W\n- [ ] 01/11/2026: 🔵 Suivre a >2026-11-20\n\n## Terminé\n' +
+    '- [x] 10/11/2026: Suivre @bob [@: y](https://mail.google.com/mail/u/0/#inbox/KEYNEW0000000000) @done(2026-11-10 09:05)\n',
+  count: 0,
+});
+eq('résolution : dernière tâche, la ligne vide avant Terminé reste',
+  resolveWaiting('# W\n- [ ] a >2026-12-01\n- [ ] b KEYEND0000000000 >2026-11-01\n\n## Terminé\n', 'KEYEND0000000000', now).content,
+  '# W\n- [ ] 🔵 a >2026-12-01\n\n## Terminé\n- [x] b KEYEND0000000000 >2026-11-01 @done(2026-11-10 09:05)\n');
+eq('résolution du jour : sur place, indentée comprise, @done',
+  resolveDaily('# x\n- [ ] Relancer a KEYDAY0000000000)\n\t* [ ] sous KEYDAY0000000000)\n- [x] fait KEYDAY0000000000)\n- [ ] autre', 'KEYDAY0000000000', now),
+  { content: '# x\n- [x] Relancer a KEYDAY0000000000) @done(2026-11-10 09:05)\n\t* [x] sous KEYDAY0000000000) @done(2026-11-10 09:05)\n- [x] fait KEYDAY0000000000)\n- [ ] autre', count: 2 });
+eq('résolution du jour : absente', resolveDaily('- [ ] autre KEYDAY00000000000)', 'KEYDAY0000000000', now).count, 0);
 eq('doublon : marqueur *, sans date', findOpenTask(note, 'KEYSTAR0000000000'), { created: '' });
 const web = `- [ ] 03/11/2026: Suivre [🌐 Ticket](https://exemple.test/browse/ABC-12) >2026-11-05
 - [ ] 03/11/2026: Suivre [🌐 Vue](https://exemple.test/view?id=2&x=1) >2026-11-05

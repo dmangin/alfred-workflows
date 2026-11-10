@@ -117,6 +117,7 @@ TARGETS = {
                                   '8F2A1C3E-5B7D-4E9F-A1B2-C3D4E5F60718.png',    # hotkey ⌥⌘,
                                   'E1F2A3B4-5C6D-4E7F-8A9B-0C1D2E3F4A5B.png',    # snippet ::mp
                                   '7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83.png',    # keyword fes
+                                  '0274D36A-A704-458E-BDB9-3B6FA4C1525F.png',    # keyword fer
                                   '9A5B6C7D-0E1F-4A2B-8C3D-5E6F7A8B9CA5.png',    # keyword feg
                                   'BC7D8E9F-2A3B-4C4D-8E5F-7A8B9CADBEC7.png']),  # hotkey Hyper+A
     'paste': ('com.dmangin.paste', ['icon.png']),

@@ -8,6 +8,19 @@
 	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
+		<key>0274D36A-A704-458E-BDB9-3B6FA4C1525F</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>3B603308-BC0E-460A-8D93-B1E42AF85A91</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83</key>
 		<array>
 			<dict>
@@ -123,6 +136,50 @@
 	<string>Follow</string>
 	<key>objects</key>
 	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>fer</string>
+				<key>subtext</key>
+				<string>Résout les suivis de l’onglet actif (note d’attente et notes du jour) et archive le mail</string>
+				<key>text</key>
+				<string>Follow : résolu</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>0274D36A-A704-458E-BDB9-3B6FA4C1525F</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" resolve</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>3B603308-BC0E-460A-8D93-B1E42AF85A91</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -432,12 +489,26 @@ fec, ⌥⌘, : copie le lien de l'onglet actif (avec l'auteur d'un mail) ; Cmd+V
 fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », à sa place dans la note d'attente
 (triée par échéance décroissante), échéance &gt;J+N
 (délai par défaut configurable) ; autre action : note du jour J+N (aujourd'hui par défaut).
-fes : recherche NotePlan sur l'onglet. feg, Hyper+A : trie la note d'attente, met à jour ses pastilles (🔵 échéance au-delà de 7 jours, 🟡 d'ici 7 jours, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, ⚪ sans échéance) et l'ouvre.
+fes : recherche NotePlan sur l'onglet. fer : coche ses suivis ouverts (@done ; en tête de Terminé dans la note d'attente, sur place dans les notes du jour de J-60 à J+30 ; aucun : propose d'en créer un déjà résolu) et archive le mail. feg, Hyper+A : trie la note d'attente, met à jour ses pastilles (🔵 échéance au-delà de 7 jours, 🟡 d'ici 7 jours, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, ⚪ sans échéance) et l'ouvre.
 Jours ouvrés : un samedi/dimanche compte comme le lundi suivant.
 
 Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (repo 2609-alfred-jxa).</string>
 	<key>uidata</key>
 	<dict>
+		<key>0274D36A-A704-458E-BDB9-3B6FA4C1525F</key>
+		<dict>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>870.0</real>
+		</dict>
+		<key>3B603308-BC0E-460A-8D93-B1E42AF85A91</key>
+		<dict>
+			<key>xpos</key>
+			<real>230.0</real>
+			<key>ypos</key>
+			<real>870.0</real>
+		</dict>
 		<key>4BE1B11E-EEA8-46BD-A8AF-9CDA9A18C6F9</key>
 		<dict>
 			<key>xpos</key>
@@ -570,7 +641,7 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>Titre de la note où vont les tâches en attente de retour (tous canaux), en tête avec &gt;AAAA-MM-JJ. Créée si absente.</string>
+			<string>Titre de la note où vont les tâches en attente de retour (tous canaux), triée par échéance. Créée si absente.</string>
 			<key>label</key>
 			<string>Note d’attente</string>
 			<key>type</key>
@@ -619,6 +690,48 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<string>textfield</string>
 			<key>variable</key>
 			<string>gca_conf_waiting_days</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>60</string>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>fer cherche aussi les tâches d’action dans les notes du jour, de J-N (ce réglage) à J+N (le suivant).</string>
+			<key>label</key>
+			<string>Résolution : jours avant</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>gca_conf_resolve_days_before</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>30</string>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Fin de la fenêtre des notes du jour de fer, en jours après aujourd’hui.</string>
+			<key>label</key>
+			<string>Résolution : jours après</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>gca_conf_resolve_days_after</string>
 		</dict>
 		<dict>
 			<key>config</key>
