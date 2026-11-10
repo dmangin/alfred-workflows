@@ -134,7 +134,14 @@ résolues : `readNote`/`writeNote` acceptent une note du jour par son titre
 31/12/2099). Sans savoir à quelle date l'action a été programmée, `fer` lit
 toutes les notes de J-60 à J+30 : 18 ms par note, 1,6 s en tout ; une année
 entière en prendrait 7. Cochées sur place : une note du jour n'a pas de section
-Terminé.
+Terminé. Damien n'archive pas un mail sans libellé (il ne se retrouverait plus
+que par recherche) : `fer` lit les pastilles de libellés à côté du sujet
+(`h2.hP` puis `.hN`, nom dans `data-name`) et ignore les libellés système
+(liste anglais/français : boîte de réception, brouillons, envoyés, suivis, en
+attente, corbeille, catégories…) ; un nom de cette liste compte quand même
+s'il a un lien `#label/<nom>` dans la barre latérale (un libellé perso nommé
+« En attente », par exemple). Sans libellé à soi, pas d'archivage, et la
+notification le dit.
 
 **Deux NotePlan (06/11/2026)** : `fe` en attente ne faisait plus rien. L'app
 Claude lance désormais le binaire de NotePlan en serveur MCP (`NotePlan

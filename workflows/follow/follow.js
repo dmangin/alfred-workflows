@@ -121,7 +121,7 @@ function dailyMatches(key, now, before, after) {
 // « Terminé » dans la note d'attente, sur place dans les notes du jour
 // (J-60 à J+30 par défaut) ; aucun : dialogue pour en créer un déjà résolu dans
 // la note d'attente (traçabilité) ou ne rien faire. Puis, sur une conversation
-// Gmail, archivage.
+// Gmail portant un libellé (hors boîte de réception), archivage.
 function resolve(ui, c, { author, link, key, tab }, dryRun) {
   if (!key) throw new UserError('Rien à résoudre : ouvre une conversation Gmail, survole un message Slack ou ouvre une page.');
   const content = noteplan.readNote(c.waitingNote);
@@ -148,8 +148,12 @@ function resolve(ui, c, { author, link, key, tab }, dryRun) {
   if (r.count || !total) noteplan.writeNote(c.waitingNote, r.content);
   days.forEach((d) => noteplan.writeNote(d.title, d.content));
   const done = (total > 1 ? total + ' suivis résolus' : total ? 'Suivi résolu' : 'Suivi créé déjà résolu') + where;
-  const archived = mail && gmail.archiveThread(tab);
-  ui.notify(done + (!mail ? '.' : archived ? ', mail archivé.' : ' ; bouton Archiver introuvable, mail non archivé.'));
+  const archive = mail ? gmail.archiveThread(tab) : '';
+  ui.notify(done + ({
+    archived: ', mail archivé.',
+    nolabel: ' ; aucun libellé : mail non archivé.',
+    nobutton: ' ; bouton Archiver introuvable, mail non archivé.',
+  }[archive] || '.'));
   return done;
 }
 

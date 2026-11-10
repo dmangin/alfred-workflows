@@ -489,7 +489,7 @@ fec, ⌥⌘, : copie le lien de l'onglet actif (avec l'auteur d'un mail) ; Cmd+V
 fe &lt;jours&gt; &lt;prio&gt; &lt;action&gt; : sans action ou « Suivre … », à sa place dans la note d'attente
 (triée par échéance décroissante), échéance &gt;J+N
 (délai par défaut configurable) ; autre action : note du jour J+N (aujourd'hui par défaut).
-fes : recherche NotePlan sur l'onglet. fer : coche ses suivis ouverts (@done ; en tête de Terminé dans la note d'attente, sur place dans les notes du jour de J-60 à J+30 ; aucun : propose d'en créer un déjà résolu) et archive le mail. feg, Hyper+A : trie la note d'attente, met à jour ses pastilles (🔵 échéance au-delà de 7 jours, 🟡 d'ici 7 jours, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, ⚪ sans échéance) et l'ouvre.
+fes : recherche NotePlan sur l'onglet. fer : coche ses suivis ouverts (@done ; en tête de Terminé dans la note d'attente, sur place dans les notes du jour de J-60 à J+30 ; aucun : propose d'en créer un déjà résolu) et archive le mail s'il porte un libellé. feg, Hyper+A : trie la note d'attente, met à jour ses pastilles (🔵 échéance au-delà de 7 jours, 🟡 d'ici 7 jours, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, ⚪ sans échéance) et l'ouvre.
 Jours ouvrés : un samedi/dimanche compte comme le lundi suivant.
 
 Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (repo 2609-alfred-jxa).</string>

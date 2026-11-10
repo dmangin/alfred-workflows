@@ -64,8 +64,11 @@ dans les notes du jour (tâches d'action), elles sont cochées sur place, de J-6
 à J+30 (réglable, environ 18 ms par jour lu). Aucune : un dialogue propose
 « Créer résolu » (tâche déjà cochée dans la note d'attente, pour la
 traçabilité) ou « Ne rien faire ». Sur une conversation Gmail, `fer` l'archive
-ensuite (bouton Archiver de la page) ; rien n'est archivé avec « Ne rien
-faire ».
+ensuite (bouton Archiver de la page), seulement si elle porte au moins un
+libellé à soi — pas un libellé système (boîte de réception, brouillons,
+envoyés, catégories…, en anglais ou en français), sauf s'il figure dans la
+barre latérale comme libellé (`#label/…`) ; sinon une notification le signale,
+le mail reste en place ; rien n'est archivé avec « Ne rien faire ».
 
 **Auteur** (`fe`) : premier expéditeur de la conversation Gmail ouverte,
 lu dans la page. Son alias vient de la table `gca_conf_gmail_aliases`

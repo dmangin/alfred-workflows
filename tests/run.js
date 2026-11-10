@@ -217,6 +217,11 @@ eq('résolution du jour : sur place, indentée comprise, @done',
   resolveDaily('# x\n- [ ] Relancer a KEYDAY0000000000)\n\t* [ ] sous KEYDAY0000000000)\n- [x] fait KEYDAY0000000000)\n- [ ] autre', 'KEYDAY0000000000', now),
   { content: '# x\n- [x] Relancer a KEYDAY0000000000) @done(2026-11-10 09:05)\n\t* [x] sous KEYDAY0000000000) @done(2026-11-10 09:05)\n- [x] fait KEYDAY0000000000)\n- [ ] autre', count: 2 });
 eq('résolution du jour : absente', resolveDaily('- [ ] autre KEYDAY00000000000)', 'KEYDAY0000000000', now).count, 0);
+const L = (name, inNav = false) => ({ name, inNav });
+eq('libellés : système ignorés', gmail.userLabels([L('Boîte de réception'), L('projets/a'), L('Inbox'), L('brouillons'), L('Messages envoyés')]), ['projets/a']);
+eq('libellés : aucun à soi', gmail.userLabels([L('Boîte de réception'), L('Drafts')]), []);
+eq('libellés : nom système mais dans la barre latérale', gmail.userLabels([L('En attente', true)]), ['En attente']);
+eq('libellés : nom proche d\'un système', gmail.userLabels([L('Brouillons/vieux')]), ['Brouillons/vieux']);
 eq('doublon : marqueur *, sans date', findOpenTask(note, 'KEYSTAR0000000000'), { created: '' });
 const web = `- [ ] 03/11/2026: Suivre [🌐 Ticket](https://exemple.test/browse/ABC-12) >2026-11-05
 - [ ] 03/11/2026: Suivre [🌐 Vue](https://exemple.test/view?id=2&x=1) >2026-11-05
