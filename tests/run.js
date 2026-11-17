@@ -196,6 +196,11 @@ eq('tri + pastilles : sections triées seulement, ligne ajoutée comprise',
   sortFollow('# W\n## À faire\n## En attente\n- [ ] 01/10/2026: a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01',
     { add: { section: 'En attente', line: '- [ ] 09/11/2026: c >2026-11-11' }, today }),
   '# W\n## À faire\n## En attente\n- [ ] 09/11/2026: 🟡 c >2026-11-11\n- [ ] 01/10/2026: 🔴 a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01');
+eq('tri + pastilles : retirées des tâches finies de Terminé et Annulé, pas des ouvertes hors sections triées',
+  sortFollow('# W\n## À faire\n## En attente\n## Terminé\n- [x] 01/09/2026: 🔴 b >2026-09-01 @done(2026-09-02 10:00)\n' +
+    '## Annulé\n- [-] 11/06/2026: 🟠 c >2026-06-12\n## Perso\n- [ ] 🔴 d >2026-01-01', { today }),
+  '# W\n## À faire\n## En attente\n## Terminé\n- [x] 01/09/2026: b >2026-09-01 @done(2026-09-02 10:00)\n' +
+    '## Annulé\n- [-] 11/06/2026: c >2026-06-12\n## Perso\n- [ ] 🔴 d >2026-01-01');
 // --- résolution (fer) ---------------------------------------------------------
 const now = D(2026, 11, 10, 9, 5);
 const toResolve = [

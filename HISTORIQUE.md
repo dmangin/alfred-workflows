@@ -171,6 +171,13 @@ lignes identiques répétées d'un mois à l'autre). Elles ont été rendues à 
 chaque mois vient d'un modèle et doit rester dans sa note du jour. Archivage de `## Terminé` : plus
 tard.
 
+**Pastilles des tâches archivées (17/11/2026)** : une tâche cochée ou annulée
+puis archivée par NotePlan (`## Terminé`, `## Annulé`) avant le rangement
+suivant gardait sa pastille à vie, ces sections n'étant jamais touchées. Chaque
+rangement retire désormais la pastille de toute tâche cochée ou annulée de la
+note ; le reste de ces sections, et les tâches ouvertes hors sections triées,
+ne bougent toujours pas.
+
 **Onglet actif masqué (10/11/2026)** : `fe`, `fec`, `fer`… ne suivaient plus
 que des mails, pendant une visio. La vignette flottante de Meet (incrustation
 en bas à droite) est, pour AppleScript, une fenêtre Wavebox à un onglet

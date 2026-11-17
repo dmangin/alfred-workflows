@@ -61,7 +61,8 @@ est recréée ; une ancienne note sans sections voit son bloc de tête rangé so
 après sa date de création, recalculée à chaque `fe`, `fer` et `feg` : 🔵
 échéance au-delà de J+7, 🟡 d'aujourd'hui à J+7, 🟠 en retard de 1 à 7 jours,
 🔴 au-delà (jours calendaires), ⚪ sans échéance ; rien sur une tâche cochée ou
-annulée. Une tâche planifiée `>date` reste visible dans la note du jour de son
+annulée, où qu'elle soit (une tâche archivée par NotePlan dans `## Terminé` ou
+`## Annulé` avant un rangement perd la sienne au suivant). Une tâche planifiée `>date` reste visible dans la note du jour de son
 échéance (références de NotePlan).
 NotePlan fermé, `feg` ouvre la note sans la toucher. Si le
 message y a déjà une tâche ouverte, un dialogue « Déjà suivi depuis le … »
