@@ -178,6 +178,26 @@ rangement retire désormais la pastille de toute tâche cochée ou annulée de l
 note ; le reste de ces sections, et les tâches ouvertes hors sections triées,
 ne bougent toujours pas.
 
+**Tranches d'échéance et récapitulatif (19/11/2026)** : à l'usage, la note était
+trop dense (plus de 100 tâches ouvertes à la suite). Choix de Damien :
+
+| Sujet | Choix | Pourquoi |
+|---|---|---|
+| Découpage | sous-sections `###` par tranche d'échéance dans `## À faire` et `## En attente` : 🔴 retard > 7 j, 🟠 retard ≤ 7 j, 🟣 aujourd'hui, 🟡 7 prochains jours, 🔵 plus tard, ⚪ sans échéance ; tranches vides omises | les tranches suivent les pastilles, « aujourd'hui » à part |
+| Pastille du jour | 🟣, le jaune restant à J+1..J+7 | une couleur à part pour ce qui est à faire aujourd'hui. Écartés : 🟢 (couleur du terminé), 📌 (pas une pastille) ; pas de turquoise parmi les ronds emoji |
+| Titres | uniques, la section rappelée (`### 🔴 À faire · retard > 7 j`) | un lien NotePlan vers un titre en double mène toujours au premier |
+| Ordre | le plus urgent en haut (inverse de l'ancien tri) ; dans une tranche, `!!!` puis `!!` puis `!`, puis l'échéance et la création les plus anciennes | ce qui brûle se voit d'abord ; une `!!!` lointaine reste dans « plus tard » |
+| Récapitulatif | sous le titre, après ce qu'on y a mis (la ligne de liens de Damien est gardée) : une ligne par section, `**À faire** (71) : 🔴 57   🟠 4 …`, chaque nombre lié à sa sous-section (`noteplan://…openNote?noteTitle=Suivi%23<titre>`), puis une ligne de légende ; refait à chaque rangement | vue d'ensemble sans défiler. Essayés d'abord dans une note de test : un tableau (NotePlan y affiche les liens markdown bruts, `[57](↗)`, et une URL nue en entier ; `**` non rendu), des colonnes alignées par des espaces (décalées en police proportionnelle), un bloc de code (aligné, mais sans liens) |
+| Tâches finies | une tâche cochée ou annulée dans ces sections part, avec ses sous-lignes, en tête de `## Terminé` ou `## Annulé` (créées si absentes) | comme `fer`, qui ne fait plus que cocher : le rangement les déplace |
+| Quand | à chaque `fe`, `fer` et `feg`, comme avant | `fe` rangeait déjà la note : une seule lecture et une seule écriture, le découpage ne coûte rien de plus |
+
+Une section va désormais de son titre au titre suivant de même niveau ou plus
+haut, pour que les `###` restent dedans ; les anciennes sous-sections de
+tranche sont retirées puis refaites, une sous-section à soi ailleurs ne bouge
+pas. Essai à blanc sur la note réelle : aucune ligne de tâche perdue ni
+ajoutée (hors pastilles, titres et récapitulatif), aucune tâche finie restée dans les
+sections rangées, second rangement sans effet.
+
 **Onglet actif masqué (10/11/2026)** : `fe`, `fec`, `fer`… ne suivaient plus
 que des mails, pendant une visio. La vignette flottante de Meet (incrustation
 en bas à droite) est, pour AppleScript, une fenêtre Wavebox à un onglet

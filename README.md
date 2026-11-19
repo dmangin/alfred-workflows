@@ -13,7 +13,7 @@ lib partagée et testée.
 | | `fe <jours> <prio> <action>` | tâche de suivi pour l'onglet actif : message Slack survolé, conversation Gmail ou page |
 | | `fes` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
 | | `fer` | résout les suivis de l'onglet actif et archive le mail |
-| | `feg`, Hyper+`A` | range la note de suivi, met à jour ses pastilles et l'ouvre |
+| | `feg`, Hyper+`A` | range la note de suivi (tranches, pastilles, récapitulatif) et l'ouvre |
 | **Wavebox Tabs** | Hyper+`M`/`S`/`W`/`C`, Hyper+`N` | onglet Gmail/Slack/WhatsApp/Agenda (onglet suivant du même service s'il est déjà actif), NotePlan |
 | **Paste** | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
 | *Gmail Searches* | `gmg` | recherches Gmail prédéfinies — workflow personnel sans code, hors dépôt |
@@ -41,28 +41,42 @@ le lien de la page (`🌐`).
 La note de suivi est commune à tous les canaux et créée si absente :
 
 ```
-# Suivi            (propriétés --- éventuelles avant)
-## À faire         triée, pastilles
-## En attente      triée, pastilles
-## Terminé         intacte
-## Annulé          intacte
+# Suivi                              (propriétés --- éventuelles avant)
+…                                    ce que tu mets sous le titre (gardé)
+**À faire** (71) : 🔴 57   🟠 4 …   récapitulatif et légende, refaits
+## À faire
+### 🔴 À faire · retard > 7 j        tranches d'échéance, rangées
+### 🟠 À faire · retard ≤ 7 j
+### 🟣 À faire · aujourd'hui
+### 🟡 À faire · 7 prochains jours
+### 🔵 À faire · plus tard
+### ⚪ À faire · sans échéance
+## En attente                        mêmes tranches (« En attente · … »)
+## Terminé                           tâches finies en tête, sinon intacte
+## Annulé                            tâches annulées en tête, sinon intacte
 ```
 
-Les deux premières sections sont tenues triées par échéance décroissante : les
-plus lointaines en haut, les plus anciennes en bas ; à échéance égale, la plus
-récente d'abord ; sans échéance, tout en bas. Chaque `fe` réécrit la note avec
-la nouvelle tâche à sa place, et `feg` la retrie (après une échéance changée à
-la main). Tâches cochées ou annulées comprises : une tâche emporte les lignes
-qui la suivent (sous-lignes `> …`, texte) ; les propriétés, le titre, ce qui
-précède la première tâche d'une section et les autres sections (`## Terminé`,
-`## Annulé`, toute section ajoutée) ne bougent pas. Une section triée absente
-est recréée ; une ancienne note sans sections voit son bloc de tête rangé sous
-`## En attente`. Chaque tâche ouverte d'une section triée porte une pastille
-après sa date de création, recalculée à chaque `fe`, `fer` et `feg` : 🔵
-échéance au-delà de J+7, 🟡 d'aujourd'hui à J+7, 🟠 en retard de 1 à 7 jours,
-🔴 au-delà (jours calendaires), ⚪ sans échéance ; rien sur une tâche cochée ou
-annulée, où qu'elle soit (une tâche archivée par NotePlan dans `## Terminé` ou
-`## Annulé` avant un rangement perd la sienne au suivant). Une tâche planifiée `>date` reste visible dans la note du jour de son
+Les deux premières sections sont rangées à chaque `fe`, `fer` et `feg` (après
+une échéance changée à la main, `feg` suffit) : chaque tâche ouverte va dans la
+sous-section de sa tranche d'échéance, en jours calendaires (tranches vides
+omises, titres refaits à chaque fois) ; dans une tranche, `!!!` puis `!!` puis
+`!` puis le reste, et à priorité égale l'échéance puis la création les plus
+anciennes d'abord. Une tâche emporte les lignes qui la suivent (sous-lignes
+`> …`, texte) ; ce qui précède la première tâche d'une section reste en tête.
+Une tâche cochée ou annulée dans ces sections part, avec ses sous-lignes, en
+tête de `## Terminé` ou `## Annulé` (créées en fin de note si absentes). Le
+récapitulatif sous le titre donne, pour chaque section, le nombre de tâches
+de chaque tranche derrière sa pastille, suivi d'une ligne de légende ; chaque
+nombre ouvre sa sous-section (les titres sont uniques pour ça). Les propriétés,
+le titre, ce que tu as mis sous le titre et les autres sections (toute section
+ajoutée, ses `###` comprises) ne bougent pas. Une section rangée absente est
+recréée ; une ancienne note sans sections voit son bloc de tête rangé sous
+`## En attente`. Chaque tâche ouverte d'une section rangée porte une pastille
+après sa date de création, celle de sa tranche : 🔵 échéance au-delà de J+7,
+🟡 de J+1 à J+7, 🟣 aujourd'hui, 🟠 en retard de 1 à 7 jours, 🔴 au-delà, ⚪ sans
+échéance ; rien sur une tâche cochée ou annulée, où qu'elle soit (une tâche
+archivée par NotePlan dans `## Terminé` ou `## Annulé` avant un rangement perd
+la sienne au suivant). Une tâche planifiée `>date` reste visible dans la note du jour de son
 échéance (références de NotePlan).
 NotePlan fermé, `feg` ouvre la note sans la toucher. Si le
 message y a déjà une tâche ouverte, un dialogue « Déjà suivi depuis le … »
@@ -73,10 +87,11 @@ soient le libellé et le compte `u/N` de l'URL), l'identifiant du message Slack
 `fes` cherche dans NotePlan. Une URL n'est reconnue qu'à l'identique
 (`…/a` ne trouve ni `…/abc` ni `…/a/b`) ; une liste Gmail n'identifie rien.
 
-**Résolution** (`fer`) : toutes les tâches ouvertes des sections triées qui
-citent le message de l'onglet actif sont cochées, datées
-`@done(AAAA-MM-JJ HH:MM)` comme dans NotePlan, et déplacées avec leurs
-sous-lignes en tête de `## Terminé` (section créée en fin de note si absente).
+**Résolution** (`fer`) : toutes les tâches ouvertes des sections rangées qui
+citent le message de l'onglet actif sont cochées et datées
+`@done(AAAA-MM-JJ HH:MM)` comme dans NotePlan ; le rangement les déplace avec
+leurs sous-lignes en tête de `## Terminé` (section créée en fin de note si
+absente).
 Aucune : un dialogue propose « Créer résolu » (tâche déjà cochée, pour la
 traçabilité) ou « Ne rien faire ». Sur une conversation Gmail, `fer` l'archive
 ensuite (bouton Archiver de la page), seulement si elle porte au moins un

@@ -8,10 +8,10 @@
 //   resolve             résout ses suivis ouverts et archive le mail  (keyword fer)
 //   open                range la note de suivi et l'ouvre  (keyword feg, Hyper+A)
 // <args> = « <jours ouvrés> <priorité> <action> », tout optionnel : « 2 !!! voir XX ».
-// Toutes les tâches vont dans la note de suivi (« Suivi »), triées par échéance
-// décroissante, pastilles 🔵🟡🟠🔴⚪ à jour : action vide ou commençant par le
-// verbe par défaut (« Suivre ») dans la section « En attente », toute autre
-// dans « À faire ».
+// Toutes les tâches vont dans la note de suivi (« Suivi »), rangées par tranche
+// d'échéance et priorité, pastilles 🔵🟡🟠🔴⚪ et tableau à jour : action vide
+// ou commençant par le verbe par défaut (« Suivre ») dans la section
+// « En attente », toute autre dans « À faire ».
 // --dry-run : affiche le résultat sans presse-papier, activation ni ajout.
 'use strict';
 
