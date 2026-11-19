@@ -114,7 +114,8 @@ const sortDay = D(2026, 11, 9, 23, 30); // lundi soir : seule la date compte
 const tidy = (s, o = {}) => sortFollow(s, Object.assign({ today: sortDay }, o));
 // Sans le récapitulatif, pour les tests qui ne portent pas dessus.
 const LEGEND = '🔴 retard > 7 j · 🟠 retard ≤ 7 j · 🟣 aujourd\'hui · 🟡 7 prochains jours · 🔵 plus tard · ⚪ sans échéance';
-const isSummary = (l) => /^\*\*(À faire|En attente)\*\* \(\d+\) :/.test(l) || l === LEGEND;
+const RULE = '| ------------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |';
+const isSummary = (l) => /^\| (À faire|En attente) \(\d+\) \|/.test(l);
 const body = (s) => {
   const lines = s.split('\n');
   const a = lines.findIndex(isSummary), b = lines.indexOf(LEGEND);
@@ -146,10 +147,11 @@ const followNote = [
 ].join('\n');
 eq('rangement : tableau, tranches urgentes d\'abord, priorité, finies déplacées', tidy(followNote).split('\n'), [
   '---', 'icon: x', '---', '# Suivi', 'liens', '',
-  '**À faire** (2) : 🔴 [ 1 ](' + npUrl('🔴 À faire · retard > 7 j') + ')   🟠 —   ' +
-    '🟣 [ 1 ](noteplan://x-callback-url/openNote?noteTitle=Suivi%23%F0%9F%9F%A3%20%C3%80%20faire%20%C2%B7%20aujourd\'hui)   🟡 —   🔵 —   ⚪ —',
-  '**En attente** (4) : 🔴 —   🟠 [ 2 ](' + npUrl('🟠 En attente · retard ≤ 7 j') + ')   🟣 —   🟡 —   ' +
-    '🔵 [ 1 ](' + npUrl('🔵 En attente · plus tard') + ')   ⚪ [ 1 ](' + npUrl('⚪ En attente · sans échéance') + ')',
+  '| À faire (2) | 🔴 [ 1 ](' + npUrl('🔴 À faire · retard > 7 j') + ') | 🟠 — | ' +
+    '🟣 [ 1 ](noteplan://x-callback-url/openNote?noteTitle=Suivi%23%F0%9F%9F%A3%20%C3%80%20faire%20%C2%B7%20aujourd\'hui) | 🟡 — | 🔵 — | ⚪ — |',
+  RULE,
+  '| En attente (4) | 🔴 — | 🟠 [ 2 ](' + npUrl('🟠 En attente · retard ≤ 7 j') + ') | 🟣 — | 🟡 — | ' +
+    '🔵 [ 1 ](' + npUrl('🔵 En attente · plus tard') + ') | ⚪ [ 1 ](' + npUrl('⚪ En attente · sans échéance') + ') |',
   LEGEND,
   '',
   '## À faire',
@@ -180,12 +182,17 @@ eq('rangement : tableau, tranches urgentes d\'abord, priorité, finies déplacé
 ]);
 eq('rangement : idempotent', tidy(tidy(followNote)), tidy(followNote));
 eq('rangement : le lendemain, tranches et tableau refaits', tidy(tidy(followNote), { today: D(2026, 11, 10) }), tidy(followNote, { today: D(2026, 11, 10) }));
-eq('rangement : ancien récapitulatif et ancien tableau retirés, ce qui les entoure gardé',
+eq('rangement : anciens récapitulatifs (lignes, tableau) retirés, ce qui les entoure gardé',
   tidy('# S\navant\n| Échéance | vieux |\n|---|\napres\n**À faire** (3) : vieux\n' + LEGEND + '\n\n## À faire\n## En attente').split('\n'),
-  ['# S', 'avant', 'apres', '', '**À faire** (0) : 🔴 —   🟠 —   🟣 —   🟡 —   🔵 —   ⚪ —',
-    '**En attente** (0) : 🔴 —   🟠 —   🟣 —   🟡 —   🔵 —   ⚪ —', LEGEND, '', '## À faire', '## En attente']);
+  ['# S', 'avant', 'apres', '', '| À faire (0) | 🔴 — | 🟠 — | 🟣 — | 🟡 — | 🔵 — | ⚪ — |', RULE,
+    '| En attente (0) | 🔴 — | 🟠 — | 🟣 — | 🟡 — | 🔵 — | ⚪ — |', LEGEND, '', '## À faire', '## En attente']);
+eq('rangement : largeurs du tableau (ligne de séparation) gardées, centrage compris',
+  tidy('# S\n| À faire (9) | x |\n| --- | :---: | - | - | - | - | -------- |\n| En attente (9) | y |\n' + LEGEND + '\n## À faire\n## En attente').split('\n')[3],
+  '| --- | :---: | - | - | - | - | -------- |');
+eq('rangement : ligne de séparation d\'une autre forme remplacée',
+  tidy('# S\n| À faire (9) | x |\n| --- | --- |\n## À faire\n## En attente').split('\n')[3], RULE);
 eq('rangement : récapitulatif séparé du titre par une ligne vide, gardée',
-  tidy(tidy('# S\n\n## À faire\n## En attente')).split('\n').slice(0, 3).map((l) => l.slice(0, 13)), ['# S', '', '**À faire** (']);
+  tidy(tidy('# S\n\n## À faire\n## En attente')).split('\n').slice(0, 3).map((l) => l.slice(0, 15)), ['# S', '', '| À faire (0) |']);
 eq('rangement : tranche par jour, priorité puis échéance puis création',
   body(tidy('# S\n## À faire\n- [ ] 02/11/2026: a >2026-11-10\n- [ ] 01/11/2026: b >2026-11-10\n- [ ] !! 03/11/2026: c >2026-11-16\n' +
     '- [ ] 04/11/2026: d >2026-11-09\n- [ ] 04/11/2026: e >2026-11-17\n## En attente')),
@@ -207,7 +214,7 @@ eq('rangement : ancienne note sans sections, son bloc va sous En attente',
     '', '### 🔵 En attente · plus tard', '- [ ] 🔵 b >2026-12-01', '', '## Terminé', '- [x] z']);
 eq('rangement : note vide, sections et récapitulatif sans liens créés, tâche ajoutée',
   tidy('', { add: { section: 'En attente', line: '- [ ] t >2026-11-15' } }).split('\n'), [
-    '**À faire** (0) : 🔴 —   🟠 —   🟣 —   🟡 —   🔵 —   ⚪ —', '**En attente** (1) : 🔴 —   🟠 —   🟣 —   🟡 1   🔵 —   ⚪ —', LEGEND,
+    '| À faire (0) | 🔴 — | 🟠 — | 🟣 — | 🟡 — | 🔵 — | ⚪ — |', RULE, '| En attente (1) | 🔴 — | 🟠 — | 🟣 — | 🟡 1 | 🔵 — | ⚪ — |', LEGEND,
     '', '## À faire', '', '## En attente', '### 🟡 En attente · 7 prochains jours', '- [ ] 🟡 t >2026-11-15', '']);
 eq('rangement : À faire seule, En attente ajoutée après',
   body(tidy('# S\n## À faire\n- [ ] x >2026-11-20\n## Terminé')), '# S\n\n## À faire\n### 🔵 À faire · plus tard\n- [ ] 🔵 x >2026-11-20\n\n## En attente\n## Terminé');
@@ -274,10 +281,11 @@ eq('résolution : toutes les tâches ouvertes des deux sections, sous-lignes, en
   content: [
     '# W',
     '',
-    '**À faire** (1) : 🔴 —   🟠 —   🟣 —   ' +
-      '🟡 [ 1 ](noteplan://x-callback-url/openNote?noteTitle=W%23%F0%9F%9F%A1%20%C3%80%20faire%20%C2%B7%207%20prochains%20jours)   🔵 —   ⚪ —',
-    '**En attente** (1) : 🔴 —   🟠 —   🟣 —   🟡 —   ' +
-      '🔵 [ 1 ](noteplan://x-callback-url/openNote?noteTitle=W%23%F0%9F%94%B5%20En%20attente%20%C2%B7%20plus%20tard)   ⚪ —',
+    '| À faire (1) | 🔴 — | 🟠 — | 🟣 — | ' +
+      '🟡 [ 1 ](noteplan://x-callback-url/openNote?noteTitle=W%23%F0%9F%9F%A1%20%C3%80%20faire%20%C2%B7%207%20prochains%20jours) | 🔵 — | ⚪ — |',
+    RULE,
+    '| En attente (1) | 🔴 — | 🟠 — | 🟣 — | 🟡 — | ' +
+      '🔵 [ 1 ](noteplan://x-callback-url/openNote?noteTitle=W%23%F0%9F%94%B5%20En%20attente%20%C2%B7%20plus%20tard) | ⚪ — |',
     LEGEND,
     '',
     '## À faire',

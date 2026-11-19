@@ -187,7 +187,7 @@ trop dense (plus de 100 tâches ouvertes à la suite). Choix de Damien :
 | Pastille du jour | 🟣, le jaune restant à J+1..J+7 | une couleur à part pour ce qui est à faire aujourd'hui. Écartés : 🟢 (couleur du terminé), 📌 (pas une pastille) ; pas de turquoise parmi les ronds emoji |
 | Titres | uniques, la section rappelée (`### 🔴 À faire · retard > 7 j`) | un lien NotePlan vers un titre en double mène toujours au premier |
 | Ordre | le plus urgent en haut (inverse de l'ancien tri) ; dans une tranche, `!!!` puis `!!` puis `!`, puis l'échéance et la création les plus anciennes | ce qui brûle se voit d'abord ; une `!!!` lointaine reste dans « plus tard » |
-| Récapitulatif | sous le titre, après ce qu'on y a mis (la ligne de liens de Damien est gardée) : une ligne par section, `**À faire** (71) : 🔴 57   🟠 4 …`, chaque nombre lié à sa sous-section (`noteplan://…openNote?noteTitle=Suivi%23<titre>`), puis une ligne de légende ; refait à chaque rangement | vue d'ensemble sans défiler. Essayés d'abord dans une note de test : un tableau (NotePlan y affiche les liens markdown bruts, `[57](↗)`, et une URL nue en entier ; `**` non rendu), des colonnes alignées par des espaces (décalées en police proportionnelle), un bloc de code (aligné, mais sans liens) |
+| Récapitulatif | sous le titre, après ce qu'on y a mis : un tableau de deux lignes, une par section (la première sert d'en-tête, NotePlan la rend comme l'autre), une cellule par tranche, `🔴 [ 57 ](lien)` vers sa sous-section (`noteplan://…openNote?noteTitle=Suivi%23<titre>`) ; la légende des pastilles collée dessous ; refait à chaque rangement | vue d'ensemble alignée sans défiler. Choisi après deux séries d'essais dans une note de test, voir ci-dessous |
 | Tâches finies | une tâche cochée ou annulée dans ces sections part, avec ses sous-lignes, en tête de `## Terminé` ou `## Annulé` (créées si absentes) | comme `fer`, qui ne fait plus que cocher : le rangement les déplace |
 | Quand | à chaque `fe`, `fer` et `feg`, comme avant | `fe` rangeait déjà la note : une seule lecture et une seule écriture, le découpage ne coûte rien de plus |
 
@@ -195,7 +195,26 @@ Une section va désormais de son titre au titre suivant de même niveau ou plus
 haut, pour que les `###` restent dedans ; les anciennes sous-sections de
 tranche sont retirées puis refaites, chacune précédée d'une ligne vide (sauf
 juste sous le titre de section), et une ligne vide sépare le titre de la note
-du récapitulatif ; une sous-section à soi ailleurs ne bouge pas. Essai à blanc sur la note réelle : aucune ligne de tâche perdue ni
+du récapitulatif ; une sous-section à soi ailleurs ne bouge pas.
+
+Essais du récapitulatif, dans une note de test et d'après les captures de
+Damien. Premier tableau (une ligne par tranche, une colonne par section) :
+peu lisible, Damien affichant le markdown brut (thème choisi pour que rien ne
+bouge au focus) — `[57](↗)`, `**` non rendus. Écartés ensuite : un lien
+`[↗]` après le nombre (pire), une URL nue (écrite en entier), des colonnes
+alignées par des espaces (décalées en police proportionnelle), un bloc de code
+(aligné mais sans liens). Retenu un temps : deux lignes de texte, `**À faire**
+(71) : 🔴 [ 57 ](…)   🟠 …`, nombres entourés d'espaces pour aérer. Puis le
+tableau actuel, comparé à un en-tête de pastilles et à un en-tête vide ;
+légende collée au tableau vérifiée : NotePlan ne l'y intègre pas, alors qu'en
+GFM une ligne collée sous un tableau en devient une rangée. Sept colonnes
+dépassaient la fenêtre (colonne ⚪ coupée) : NotePlan permet de redimensionner
+un tableau et l'enregistre dans le markdown, dans la ligne de séparation
+(nombre de tirets par colonne, centrage `:-:` perdu) ; elle est donc gardée,
+et celle de Damien sert de valeur par défaut (13 tirets pour la première
+colonne, 11 pour les autres : ni retour à la ligne, ni défilement). Constat au passage : une note
+réécrite par AppleScript pendant que NotePlan l'affiche peut être écrasée par
+sa version de l'éditeur. Essai à blanc sur la note réelle : aucune ligne de tâche perdue ni
 ajoutée (hors pastilles, titres et récapitulatif), aucune tâche finie restée dans les
 sections rangées, second rangement sans effet.
 

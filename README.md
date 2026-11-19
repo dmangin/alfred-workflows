@@ -43,7 +43,7 @@ La note de suivi est commune à tous les canaux et créée si absente :
 ```
 # Suivi                              (propriétés --- éventuelles avant)
 …                                    ce que tu mets sous le titre (gardé)
-**À faire** (71) : 🔴 57   🟠 4 …   récapitulatif et légende, refaits
+| À faire (71) | 🔴 57 | 🟠 4 | …     récapitulatif (tableau) et légende
 ## À faire
 ### 🔴 À faire · retard > 7 j        tranches d'échéance, rangées
 ### 🟠 À faire · retard ≤ 7 j
@@ -65,9 +65,12 @@ anciennes d'abord. Une tâche emporte les lignes qui la suivent (sous-lignes
 `> …`, texte) ; ce qui précède la première tâche d'une section reste en tête.
 Une tâche cochée ou annulée dans ces sections part, avec ses sous-lignes, en
 tête de `## Terminé` ou `## Annulé` (créées en fin de note si absentes). Le
-récapitulatif sous le titre donne, pour chaque section, le nombre de tâches
-de chaque tranche derrière sa pastille, suivi d'une ligne de légende ; chaque
-nombre ouvre sa sous-section (les titres sont uniques pour ça). Les propriétés,
+récapitulatif sous le titre est un tableau de deux lignes, une par section
+(« À faire (71) », la première servant d'en-tête), avec une cellule par
+tranche : sa pastille et son nombre de tâches, qui ouvre sa sous-section (les
+titres sont uniques pour ça) ; la légende des pastilles suit, collée. Les
+largeurs de colonnes réglées dans NotePlan (stockées dans la ligne de
+séparation, en nombre de tirets) sont gardées d'un rangement à l'autre. Les propriétés,
 le titre, ce que tu as mis sous le titre et les autres sections (toute section
 ajoutée, ses `###` comprises) ne bougent pas. Une section rangée absente est
 recréée ; une ancienne note sans sections voit son bloc de tête rangé sous
