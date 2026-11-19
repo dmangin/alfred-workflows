@@ -218,6 +218,31 @@ sa version de l'éditeur. Essai à blanc sur la note réelle : aucune ligne de t
 ajoutée (hors pastilles, titres et récapitulatif), aucune tâche finie restée dans les
 sections rangées, second rangement sans effet.
 
+**Compléter au lieu de doubler (19/11/2026)** : `fe` sur un message déjà
+suivi proposait de créer une seconde tâche, ce qui ne servait à rien ; Damien
+complète en fait la tâche existante à la main, avec des sous-lignes datées
+(`\t> 19/11/2026: relance @x`). Idée de Damien : le dialogue propose
+désormais « Compléter » ou « Ne rien faire ». Choix validés :
+
+| Sujet | Choix |
+|---|---|
+| Sous-ligne | `jj/mm/aaaa: <texte saisi>` (`relance` sans texte) à la suite de la dernière citation `\t> …` de la tâche, après un retour à la ligne doux ; sinon une nouvelle sous-ligne `\t> …` après les existantes |
+| Échéance | à N jours ouvrés si saisi ; sinon selon la section de la tâche, qui ne change pas : délai d'attente sous « En attente », aujourd'hui sous « À faire » |
+| Priorité | remplacée si saisie, gardée sinon |
+| Plusieurs tâches citent le message | la plus récemment créée (`findOpenTask` la renvoie avec sa ligne) |
+
+`completeFollow` modifie la tâche puis range la note ; pas d'échéance sur la
+ligne : elle est ajoutée.
+
+Après le premier essai (même jour), Damien a demandé d'empiler les entrées
+dans une seule citation, comme il le fait à la main avec Maj+Entrée. Lu dans
+sa note : NotePlan écrit ce retour à la ligne doux en U+2028 (LINE
+SEPARATOR), pas en retour chariot. Piège JavaScript : `.` dans une regex ne
+traverse pas U+2028 ; l'échéance (dernière `>date` de la ligne) est donc
+cherchée avec `[\s\S]`, une tâche ayant un retour doux sur sa propre ligne.
+Vérifié au passage : une tâche cochée ou annulée part dans Terminé ou Annulé
+avec ses sous-lignes (citations, retours doux, sous-tâches).
+
 **Onglet actif masqué (10/11/2026)** : `fe`, `fec`, `fer`… ne suivaient plus
 que des mails, pendant une visio. La vignette flottante de Meet (incrustation
 en bas à droite) est, pour AppleScript, une fenêtre Wavebox à un onglet

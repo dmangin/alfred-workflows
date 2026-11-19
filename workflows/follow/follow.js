@@ -28,7 +28,7 @@ const require = (() => {
 const { app, env, main, UserError } = require('lib/alfred');
 const { addWorkingDays, frDate } = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { TODO, WAITING, planTask, followTaskLine, findOpenTask, sortFollow, resolveFollow } = require('lib/follow');
+const { TODO, WAITING, parseFollowArgs, planTask, followTaskLine, sortFollow, resolveFollow, completeFollow } = require('lib/follow');
 const { currentItem } = require('lib/sources/current');
 const gmail = require('lib/sources/gmail');
 
@@ -57,19 +57,21 @@ function confirm(text, ok, cancel = 'Annuler') {
   }
 }
 
-const confirmDuplicate = (c, dup) => confirm('Déjà suivi' + (dup.created ? ' depuis le ' + dup.created : '') +
-  ' dans « ' + c.note + ' ».', 'Créer quand même');
-
 // Dans la note de suivi (créée si absente), section « En attente » ou « À
 // faire », avec l'échéance « >AAAA-MM-JJ », à sa place dans l'ordre des
-// échéances (la note est réécrite rangée), après confirmation si le message y
-// est déjà suivi.
+// échéances (la note est réécrite rangée). Message déjà suivi : on propose de
+// compléter sa tâche (completeFollow : sous-ligne datée, échéance, priorité)
+// ou de ne rien faire.
 function addTask(ui, c, { rawArgs, author, link, key }, dryRun) {
-  const { waiting, days, prio, action } = planTask(rawArgs, { verb: c.verb, waitingDays: c.waitingDays });
   const now = new Date();
+  const content = noteplan.readNote(c.note);
+  const typed = parseFollowArgs(rawArgs);
+  const more = content !== null &&
+    completeFollow(content, key, { text: typed.action, prio: typed.prio, days: typed.days, waitingDays: c.waitingDays, now });
+  if (more) return completeTask(ui, c, more, dryRun);
+  const { waiting, days, prio, action } = planTask(rawArgs, { verb: c.verb, waitingDays: c.waitingDays });
   const due = addWorkingDays(now, days);
   const add = { section: waiting ? WAITING : TODO, line: noteplan.scheduled(followTaskLine({ prio, action, created: now, author, link }), due) };
-  const content = noteplan.readNote(c.note);
   const message = 'Tâche ajoutée à « ' + c.note + ' » (' + add.section + '), échéance ' + frDate(due) + '.';
   let url;
   if (content === null) {
@@ -77,14 +79,25 @@ function addTask(ui, c, { rawArgs, author, link, key }, dryRun) {
     if (dryRun) return url;
   } else {
     url = noteplan.openNoteUrl(c.note);
-    const dup = findOpenTask(content, key);
     const sorted = sortFollow(content, { add, today: now });
-    if (dryRun) return 'writeNote « ' + c.note + ' » + ' + url + (dup ? ' (doublon : ' + (dup.created || 'sans date') + ')' : '') + '\n' + sorted;
-    if (dup && !confirmDuplicate(c, dup)) return '';
+    if (dryRun) return 'writeNote « ' + c.note + ' » + ' + url + '\n' + sorted;
     noteplan.writeNote(c.note, sorted);
   }
   app.openLocation(url);
   ui.notify(message);
+  return url;
+}
+
+// Complément d'un suivi existant, après confirmation.
+function completeTask(ui, c, more, dryRun) {
+  const url = noteplan.openNoteUrl(c.note);
+  const where = (more.section ? ' (' + more.section + ')' : '') + ', échéance ' + frDate(more.due);
+  if (dryRun) return 'déjà suivi' + (more.created ? ' depuis le ' + more.created : '') + ' : dialogue Compléter, puis writeNote + ' + url + '\n' + more.content;
+  if (!confirm('Déjà suivi' + (more.created ? ' depuis le ' + more.created : '') + ' dans « ' + c.note + ' ».\n\n' +
+    'Compléter la tâche' + where + ' ?', 'Compléter', 'Ne rien faire')) return '';
+  noteplan.writeNote(c.note, more.content);
+  app.openLocation(url);
+  ui.notify('Suivi complété dans « ' + c.note + ' »' + where + '.');
   return url;
 }
 

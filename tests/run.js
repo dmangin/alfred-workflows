@@ -16,7 +16,7 @@ const require = (() => {
 
 const dates = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortFollow, resolveFollow } = require('lib/follow');
+const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortFollow, resolveFollow, completeFollow } = require('lib/follow');
 const gmail = require('lib/sources/gmail');
 const wavebox = require('lib/wavebox');
 const { buildMarkdown, messageKey } = require('lib/sources/slack');
@@ -106,7 +106,7 @@ const note = `# En attente de retour
 - [x] 01/10/2026: Suivre [@: fini](https://mail.google.com/mail/u/0/#inbox/KEYDONE0000000000) >2026-10-03
 - [ ] 02/10/2026: Suivre @bob [@: devis](https://mail.google.com/mail/u/0/#inbox/KEYOPEN0000000000) >2026-10-06
 * [ ] Suivre sans date KEYSTAR0000000000`;
-eq('doublon : tâche ouverte', findOpenTask(note, 'KEYOPEN0000000000'), { created: '02/10/2026' });
+eq('doublon : tâche ouverte', findOpenTask(note, 'KEYOPEN0000000000'), { created: '02/10/2026', index: 2 });
 eq('doublon : tâche faite ignorée', findOpenTask(note, 'KEYDONE0000000000'), null);
 
 // --- note de suivi : tableau, sections rangées par tranches d'échéance ---------
@@ -221,6 +221,9 @@ eq('rangement : À faire seule, En attente ajoutée après',
 eq('rangement : section et sous-section ajoutées par l\'utilisateur intactes',
   body(tidy('# S\n## À faire\n## En attente\n- [ ] a >2026-11-20\n## Perso\n### Plus tard\n- [ ] c >2026-01-01\n- [ ] d >2026-06-01')),
   '# S\n\n## À faire\n## En attente\n### 🔵 En attente · plus tard\n- [ ] 🔵 a >2026-11-20\n## Perso\n### Plus tard\n- [ ] c >2026-01-01\n- [ ] d >2026-06-01');
+eq('rangement : cochée vers Terminé avec sa sous-ligne à retours doux et sa sous-tâche',
+  body(tidy('# S\n## À faire\n- [x] 01/11/2026: a >2026-11-01\n\t> 02/11/2026: relance 03/11/2026: fait\n\t- [ ] sous-tâche\n- [ ] b >2026-11-20\n## En attente\n## Terminé\n- [x] vieux')).split('\n').slice(-4),
+  ['- [x] 01/11/2026: a >2026-11-01', '\t> 02/11/2026: relance 03/11/2026: fait', '\t- [ ] sous-tâche', '- [x] vieux']);
 eq('rangement : annulée vers Annulé existant, en tête, lignes vides de fin retirées',
   body(tidy('# S\n## À faire\n- [-] 01/11/2026: 🔴 a >2026-11-01\n\t> abandon\n\n- [ ] b >2026-11-20\n## En attente\n## Terminé\n## Annulé\n- [-] vieux\n')),
   '# S\n\n## À faire\n### 🔵 À faire · plus tard\n- [ ] 🔵 b >2026-11-20\n## En attente\n## Terminé\n## Annulé\n- [-] 01/11/2026: a >2026-11-01\n\t> abandon\n- [-] vieux\n');
@@ -320,6 +323,54 @@ eq('résolution : dans une sous-section de tranche',
   resolveFollow(tidy('# W\n## À faire\n## En attente\n- [ ] a KEYSUB0000000000 >2026-11-01'), 'KEYSUB0000000000', now).count, 1);
 eq('résolution : hors sections rangées ignorée',
   resolveFollow('# W\n## À faire\n## En attente\n## Perso\n- [ ] p KEYOUT0000000000)', 'KEYOUT0000000000', now).count, 0);
+// --- complément (fe sur un message déjà suivi) -------------------------------
+eq('doublon : la plus récente si plusieurs',
+  findOpenTask('- [ ] 01/10/2026: a KEYTWO\n- [ ] 05/10/2026: b KEYTWO\n- [ ] 03/10/2026: c KEYTWO\n- [ ] sans date KEYTWO', 'KEYTWO'),
+  { created: '05/10/2026', index: 1 });
+const toComplete = [
+  '# Suivi',
+  '## À faire',
+  '- [ ] 01/11/2026: relancer x KEYCPL0000000000) >2026-11-05',
+  '- [ ] 02/11/2026: sans échéance KEYNODUE00000000)',
+  '## En attente',
+  '- [ ] !! 26/05/2026: Suivre @a [@: m](https://mail.google.com/mail/u/0/#inbox/KEYWAIT000000000) >2026-11-26',
+  '\t> 19/10/2026: relance @a',
+  '- [ ] 02/11/2026: Suivre b >2026-11-20',
+  '## Terminé',
+].join('\n');
+const cpl = (key, o) => completeFollow(toComplete, key, Object.assign({ text: '', prio: '', days: null, waitingDays: 2, now }, o));
+const waitDone = cpl('KEYWAIT000000000', { text: 'relance faite' });
+eq('complément : en attente, à la suite de la citation après un retour doux, délai d\'attente, priorité gardée, rangée', body(waitDone.content).split('\n'), [
+  '# Suivi', '', '## À faire',
+  '### 🟠 À faire · retard ≤ 7 j', '- [ ] 01/11/2026: 🟠 relancer x KEYCPL0000000000) >2026-11-05',
+  '', '### ⚪ À faire · sans échéance', '- [ ] 02/11/2026: ⚪ sans échéance KEYNODUE00000000)',
+  '## En attente',
+  '### 🟡 En attente · 7 prochains jours',
+  '- [ ] !! 26/05/2026: 🟡 Suivre @a [@: m](https://mail.google.com/mail/u/0/#inbox/KEYWAIT000000000) >2026-11-12',
+  '\t> 19/10/2026: relance @a\u202810/11/2026: relance faite',
+  '', '### 🔵 En attente · plus tard', '- [ ] 02/11/2026: 🔵 Suivre b >2026-11-20',
+  '## Terminé',
+]);
+const meta = (r) => ({ created: r.created, section: r.section, due: dates.isoDate(r.due) });
+eq('complément : tâche, section et échéance renvoyées', meta(waitDone), { created: '26/05/2026', section: 'En attente', due: '2026-11-12' });
+const todoDone = cpl('KEYCPL0000000000', { prio: '!!!', days: 3 });
+eq('complément : à faire, jours donnés, priorité posée, « relance » sans texte', body(todoDone.content).split('\n').slice(3, 6), [
+  '### 🟡 À faire · 7 prochains jours', '- [ ] !!! 01/11/2026: 🟡 relancer x KEYCPL0000000000) >2026-11-13', '\t> 10/11/2026: relance']);
+eq('complément : 3 jours ouvrés depuis un mardi', meta(todoDone).due, '2026-11-13');
+eq('complément : échéance ajoutée si absente, priorité remplacée',
+  body(cpl('KEYNODUE00000000', { text: 'vu', prio: '!' }).content).split('\n').slice(6, 9),
+  ['### 🟣 À faire · aujourd\'hui', '- [ ] ! 02/11/2026: 🟣 sans échéance KEYNODUE00000000) >2026-11-10', '\t> 10/11/2026: vu']);
+eq('complément : priorité existante remplacée', cpl('KEYWAIT000000000', { prio: '!' }).content.includes('- [ ] ! 26/05/2026:'), true);
+eq('complément : absente, null', cpl('KEYNONE000000000', {}), null);
+eq('complément : dernière sous-ligne pas une citation, nouvelle sous-ligne',
+  completeFollow('# S\n## À faire\n## En attente\n- [ ] a KEYSUB2000000000 >2026-11-20\n\t> 01/11/2026: vu\n\t- [ ] sous-tâche', 'KEYSUB2000000000',
+    { text: 'ok', prio: '', days: 5, waitingDays: 2, now }).content.split('\n').slice(-3),
+  ['\t> 01/11/2026: vu', '\t- [ ] sous-tâche', '\t> 10/11/2026: ok']);
+eq('complément : échéance après un retour doux sur la ligne de la tâche',
+  completeFollow('# S\n## À faire\n- [ ] a KEYSOFT000000000) suite >2026-11-01\n## En attente', 'KEYSOFT000000000',
+    { text: '', prio: '', days: 1, waitingDays: 2, now }).content.includes('KEYSOFT000000000) suite >2026-11-11\n\t> 10/11/2026: relance'), true);
+eq('rangement : échéance = dernier >date, retour doux compris',
+  body(tidy('# S\n## À faire\n## En attente\n- [ ] a >2026-11-20 puis >2026-11-01')).split('\n').slice(4, 5), ['### 🔴 En attente · retard > 7 j']);
 const L = (name, inNav = false) => ({ name, inNav });
 eq('libellés : système ignorés', gmail.userLabels([L('Boîte de réception'), L('projets/a'), L('Inbox'), L('brouillons'), L('Messages envoyés')]), ['projets/a']);
 eq('libellés : aucun à soi', gmail.userLabels([L('Boîte de réception'), L('Drafts')]), []);
@@ -343,16 +394,16 @@ eq('onglet actif : vignette Meet devant, onglet de la fenêtre suivante',
 eq('onglet actif : tout vide, repli sur Gmail',
   wavebox.activeTab(fakeBrowser(meet, winOf([tabOf('about:blank'), gmailT], 0)), gmailSpec).url(), gmailT.url());
 eq('onglet actif : tout vide, sans Gmail', wavebox.activeTab(fakeBrowser(meet), gmailSpec).url(), 'about:blank');
-eq('doublon : marqueur *, sans date', findOpenTask(note, 'KEYSTAR0000000000'), { created: '' });
+eq('doublon : marqueur *, sans date', findOpenTask(note, 'KEYSTAR0000000000'), { created: '', index: 3 });
 const web = `- [ ] 03/11/2026: Suivre [🌐 Ticket](https://exemple.test/browse/ABC-12) >2026-11-05
 - [ ] 03/11/2026: Suivre [🌐 Vue](https://exemple.test/view?id=2&x=1) >2026-11-05
 - [ ] 03/11/2026: Suivre [#️⃣ #dev](https://exemple.slack.com/archives/C01/p1700000000999999?thread_ts=1700000000.123456&cid=C01) >2026-11-05`;
-eq('doublon : URL de page exacte', findOpenTask(web, 'https://exemple.test/browse/ABC-12'), { created: '03/11/2026' });
+eq('doublon : URL de page exacte', findOpenTask(web, 'https://exemple.test/browse/ABC-12'), { created: '03/11/2026', index: 0 });
 eq('doublon : URL préfixe d\'une autre (…/ABC-1)', findOpenTask(web, 'https://exemple.test/browse/ABC-1'), null);
 eq('doublon : URL parente (…/browse)', findOpenTask(web, 'https://exemple.test/browse'), null);
-eq('doublon : URL avec paramètres', findOpenTask(web, 'https://exemple.test/view?id=2&x=1'), { created: '03/11/2026' });
+eq('doublon : URL avec paramètres', findOpenTask(web, 'https://exemple.test/view?id=2&x=1'), { created: '03/11/2026', index: 1 });
 eq('doublon : autre valeur de paramètre', findOpenTask(web, 'https://exemple.test/view?id=20'), null);
-eq('doublon : réponse de fil Slack', findOpenTask(web, 'p1700000000999999'), { created: '03/11/2026' });
+eq('doublon : réponse de fil Slack', findOpenTask(web, 'p1700000000999999'), { created: '03/11/2026', index: 2 });
 eq('doublon : identifiant Slack préfixe', findOpenTask(web, 'p170000000099999'), null);
 eq('doublon : absent', findOpenTask(note, 'KEYNONE0000000000'), null);
 eq('doublon : sans clé (page web)', findOpenTask(note, ''), null);

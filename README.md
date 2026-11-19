@@ -81,9 +81,19 @@ après sa date de création, celle de sa tranche : 🔵 échéance au-delà de J
 archivée par NotePlan dans `## Terminé` ou `## Annulé` avant un rangement perd
 la sienne au suivant). Une tâche planifiée `>date` reste visible dans la note du jour de son
 échéance (références de NotePlan).
-NotePlan fermé, `feg` ouvre la note sans la toucher. Si le
-message y a déjà une tâche ouverte, un dialogue « Déjà suivi depuis le … »
-propose de créer quand même (↩) ou d'annuler (Échap). Le message est
+NotePlan fermé, `feg` ouvre la note sans la toucher.
+
+**Message déjà suivi** (`fe` alors qu'une tâche ouverte de la note le cite) :
+un dialogue « Déjà suivi depuis le … » propose de **compléter** sa tâche (↩)
+ou de ne rien faire (Échap). Compléter ajoute `jj/mm/aaaa: <texte saisi>`
+(`relance` sans texte) à la suite de la dernière sous-ligne de citation
+(`\t> …`) de la tâche, après un retour à la ligne doux (U+2028, comme
+Maj+Entrée dans NotePlan : un seul bloc), ou dans une nouvelle sous-ligne
+`\t> …` après les existantes s'il n'y en a pas ; il déplace
+son échéance au nombre de jours ouvrés saisi (sans nombre : délai d'attente
+sous `## En attente`, aujourd'hui sous `## À faire`), remplace sa priorité si
+une est saisie (`fe 2 !!! relancé`), puis range la note ; la tâche ne change
+pas de section. Plusieurs tâches le citent : la plus récemment créée. Le message est
 identifié par l'identifiant de conversation Gmail (`FMfcg…`, le même quels que
 soient le libellé et le compte `u/N` de l'URL), l'identifiant du message Slack
 (`p1700…`) ou, pour toute autre page, son URL complète ; c'est aussi ce que
@@ -184,9 +194,9 @@ osascript -l JavaScript workflows/follow/follow.js task "2 !!! voir" --dry-run
 osascript -l JavaScript workflows/paste/paste.js date 3
 ```
 
-`--dry-run` (Follow) affiche le lien ou l'URL NotePlan (suivie de « doublon »
-si le message est déjà en attente), sans presse-papier, dialogue, activation
-ni ajout.
+`--dry-run` (Follow) affiche le lien ou l'URL NotePlan et la note telle
+qu'elle serait écrite (« déjà suivi » en tête si `fe` complèterait une tâche),
+sans presse-papier, dialogue, activation ni écriture.
 
 ## Prérequis
 
