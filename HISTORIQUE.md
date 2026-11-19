@@ -193,8 +193,9 @@ trop dense (plus de 100 tâches ouvertes à la suite). Choix de Damien :
 
 Une section va désormais de son titre au titre suivant de même niveau ou plus
 haut, pour que les `###` restent dedans ; les anciennes sous-sections de
-tranche sont retirées puis refaites, une sous-section à soi ailleurs ne bouge
-pas. Essai à blanc sur la note réelle : aucune ligne de tâche perdue ni
+tranche sont retirées puis refaites, chacune précédée d'une ligne vide (sauf
+juste sous le titre de section), et une ligne vide sépare le titre de la note
+du récapitulatif ; une sous-section à soi ailleurs ne bouge pas. Essai à blanc sur la note réelle : aucune ligne de tâche perdue ni
 ajoutée (hors pastilles, titres et récapitulatif), aucune tâche finie restée dans les
 sections rangées, second rangement sans effet.
 
