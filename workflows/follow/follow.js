@@ -1,15 +1,16 @@
 #!/usr/bin/env osascript -l JavaScript
 // Follow — liens et tâches de suivi NotePlan depuis l'onglet actif du navigateur
 // (Wavebox) : message Slack survolé, conversation Gmail ou page web.
-//   copy                lien de l'onglet actif -> presse-papier  (keyword fec, ⌥⌘,)
+//   copy                lien de l'onglet actif -> presse-papier  (keyword fel, ⌥⌘,)
 //   link                lien de l'onglet actif, renvoyé à Alfred qui le colle  (snippet ::mp)
 //   task <args>         tâche de suivi pour l'onglet actif  (keyword fe)
-//   status              recherche NotePlan sur l'onglet actif : déjà suivi ?  (keyword fes)
-//   resolve             résout ses suivis ouverts et archive le mail  (keyword fer)
+//   status              recherche NotePlan sur l'onglet actif : déjà suivi ?  (keyword fe?)
+//   resolve [libellé]   résout ses suivis ouverts et archive le mail  (keyword fex)
+//   cancel [libellé]    annule ses suivis ouverts et archive le mail  (keyword fe-)
 //   open                range la note de suivi et l'ouvre  (keyword feg, Hyper+A)
 // <args> = « <jours ouvrés> <priorité> <action> », tout optionnel : « 2 !!! voir XX ».
 // Toutes les tâches vont dans la note de suivi (« Suivi »), rangées par tranche
-// d'échéance et priorité, pastilles 🔵🟡🟠🔴⚪ et tableau à jour : action vide
+// d'échéance et priorité, pastilles 🔴🟠🟣🟡🔵⚪ et récapitulatif à jour : action vide
 // ou commençant par le verbe par défaut (« Suivre ») dans la section
 // « En attente », toute autre dans « À faire ».
 // --dry-run : affiche le résultat sans presse-papier, activation ni ajout.
@@ -28,7 +29,7 @@ const require = (() => {
 const { app, env, main, UserError } = require('lib/alfred');
 const { addWorkingDays, frDate } = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { TODO, WAITING, parseFollowArgs, planTask, followTaskLine, sortFollow, resolveFollow, completeFollow } = require('lib/follow');
+const { TODO, WAITING, parseFollowArgs, planTask, followTaskLine, sortFollow, closeFollow, completeFollow } = require('lib/follow');
 const { currentItem } = require('lib/sources/current');
 const gmail = require('lib/sources/gmail');
 
@@ -101,27 +102,32 @@ function completeTask(ui, c, more, dryRun) {
   return url;
 }
 
-// Résolution : les suivis ouverts de l'onglet passent cochés en tête de
-// « Terminé » ; aucun : dialogue pour en créer un déjà résolu (traçabilité) ou
-// ne rien faire. Puis, sur une conversation Gmail portant un libellé à soi,
+// Fermeture, résolution (fex) ou annulation (fe-) : les suivis ouverts de
+// l'onglet passent cochés en tête de « Terminé » ou annulés en tête
+// d'« Annulé », le libellé saisi (facultatif) en entrée datée de la plus
+// récente ; aucun : dialogue pour en créer un déjà fermé (traçabilité) ou ne
+// rien faire. Puis, sur une conversation Gmail portant un libellé à soi,
 // archivage.
-function resolve(ui, c, { author, link, key, tab }, dryRun) {
-  if (!key) throw new UserError('Rien à résoudre : ouvre une conversation Gmail, survole un message Slack ou ouvre une page.');
+function close(ui, c, { author, link, key, tab }, text, cancel, dryRun) {
+  const [verb, done1, doneN, created] = cancel
+    ? ['annuler', 'Suivi annulé', ' suivis annulés', 'Suivi créé déjà annulé']
+    : ['résoudre', 'Suivi résolu', ' suivis résolus', 'Suivi créé déjà résolu'];
+  if (!key) throw new UserError('Rien à ' + verb + ' : ouvre une conversation Gmail, survole un message Slack ou ouvre une page.');
   const content = noteplan.readNote(c.note);
   if (content === null) throw new UserError('La note « ' + c.note + ' » n’existe pas encore.');
   const now = new Date();
   const mail = !!gmail.threadKey(tab.url());
-  let r = resolveFollow(content, key, now);
+  let r = closeFollow(content, key, now, { cancel, text });
   if (!r.count) {
-    const line = followTaskLine({ prio: '', action: c.verb, created: now, author, link });
-    if (dryRun) return 'aucun suivi ouvert : dialogue, puis' + (mail ? ' archivage +' : '') + ' writeNote\n' +
-      resolveFollow(content, key, now, line).content;
-    if (!confirm('Aucun suivi ouvert pour cet onglet dans « ' + c.note + ' ».', 'Créer résolu', 'Ne rien faire')) return '';
-    r = resolveFollow(content, key, now, line);
+    const newLine = followTaskLine({ prio: '', action: c.verb, created: now, author, link });
+    const createClosed = () => closeFollow(content, key, now, { cancel, text, newLine });
+    if (dryRun) return 'aucun suivi ouvert : dialogue, puis' + (mail ? ' archivage +' : '') + ' writeNote\n' + createClosed().content;
+    if (!confirm('Aucun suivi ouvert pour cet onglet dans « ' + c.note + ' ».', cancel ? 'Créer annulé' : 'Créer résolu', 'Ne rien faire')) return '';
+    r = createClosed();
   }
-  if (dryRun) return r.count + ' suivi(s) résolu(s)' + (mail ? ' + archivage' : '') + ' : writeNote\n' + r.content;
+  if (dryRun) return r.count + (cancel ? ' suivi(s) annulé(s)' : ' suivi(s) résolu(s)') + (mail ? ' + archivage' : '') + ' : writeNote\n' + r.content;
   noteplan.writeNote(c.note, r.content);
-  const done = r.count > 1 ? r.count + ' suivis résolus' : r.count ? 'Suivi résolu' : 'Suivi créé déjà résolu';
+  const done = r.count > 1 ? r.count + doneN : r.count ? done1 : created;
   const archive = mail ? gmail.archiveThread(tab) : '';
   ui.notify(done + ({
     archived: ', mail archivé.',
@@ -163,7 +169,8 @@ function run(argv) {
         return url;
       }
       case 'resolve':
-        return resolve(ui, c, currentItem(c.browser, c.aliases), dryRun);
+      case 'cancel':
+        return close(ui, c, currentItem(c.browser, c.aliases), rawArgs, cmd === 'cancel', dryRun);
       case 'open': {
         const url = noteplan.openNoteUrl(c.note);
         // NotePlan fermé : l'URL le lance, sans tri ni pastilles.
@@ -182,7 +189,7 @@ function run(argv) {
         return url;
       }
       default:
-        throw new UserError('Commande inconnue : « ' + cmd + ' » (copy, link, task, status, resolve, open).');
+        throw new UserError('Commande inconnue : « ' + cmd + ' » (copy, link, task, status, resolve, cancel, open).');
     }
   });
 }

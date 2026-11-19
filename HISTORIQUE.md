@@ -218,6 +218,46 @@ sa version de l'éditeur. Essai à blanc sur la note réelle : aucune ligne de t
 ajoutée (hors pastilles, titres et récapitulatif), aucune tâche finie restée dans les
 sections rangées, second rangement sans effet.
 
+**Raccourcis mnémotechniques (19/11/2026)** : à l'usage, les mots-clés ne se
+retenaient pas — chaque lettre évoquait autre chose à Damien : `fes` « solve »,
+`fec` « cancel », `fed` « done », `fer` un mot français, et « resolve » ou
+« drop » ne viennent pas en premier. Règle retenue : une lettre qui marche en
+français et en anglais, ou un symbole qui reproduit ce que la commande écrit
+dans NotePlan (idée de Damien pour `[x]` et `[-]`).
+
+| Action | Avant | Après | Pourquoi |
+|---|---|---|---|
+| Suivre, compléter | `fe` | `fe` | inchangé |
+| Résoudre | `fer` | `fex` | `[x]` |
+| Annuler | `fed` | `fe-` | `[-]` (sans Maj en AZERTY) |
+| Copier le lien | `fec` | `fel` | *lien* / *link* |
+| Déjà suivi ? | `fes` | `fe?` | la question elle-même (Maj+virgule, commande rare) |
+| Ouvrir la note | `feg` | `feg` | gardé : *go* est courant en français aussi, bien retenu, et `g` ne se confond avec rien (essayé un temps en `fen`, *note*) |
+
+Bascule directe, sans garder les anciens (choix de Damien). Chaque titre Alfred
+commence par son raccourci (`fex · Résoudre — [x]`) pour qu'il rentre à
+l'usage. Aucun autre workflow n'utilisait ces mots-clés.
+
+**Historique à la résolution, annulation (19/11/2026)** : sur la lancée du
+complément, demande de Damien : `fer <libellé>` ajoute le libellé à
+l'historique de la tâche avant de la résoudre, et un équivalent pour annuler.
+Choix validés :
+
+| Sujet | Choix | Pourquoi |
+|---|---|---|
+| Mot-clé d'annulation | `fed` (*drop*) | `fec` est déjà *copy* ; un mot-clé à part plutôt qu'une option de `fer` (`fer x …` serait ambigu avec un libellé) |
+| Archivage | comme `fer` (libellé à soi requis) | une tâche abandonnée clôt aussi le mail |
+| Aucune tâche | dialogue « Créer annulé » / « Ne rien faire », comme `fer` | traçabilité |
+| Plusieurs tâches | toutes fermées, libellé sur la plus récente seulement | comme le complément de `fe` |
+
+Code commun : `addEntry` (entrée datée à la suite de la dernière citation,
+après un retour doux) sert à `fe` (`completeFollow`) et à `fer`/`fed`
+(`closeFollow`, qui remplace `resolveFollow` et sait cocher ou annuler). Une
+tâche annulée ne reçoit pas de `@done`. Une tâche créée déjà fermée s'insère
+en fin de « À faire », pour ne pas emporter le texte de tête de la section.
+Dans Alfred, `fer` accepte désormais un argument facultatif ; `fed` est une
+copie de `fer` (même icône), et les sous-titres de `fe` et `feg` sont à jour.
+
 **Compléter au lieu de doubler (19/11/2026)** : `fe` sur un message déjà
 suivi proposait de créer une seconde tâche, ce qui ne servait à rien ; Damien
 complète en fait la tâche existante à la main, avec des sous-lignes datées

@@ -8,18 +8,21 @@ lib partagée et testée.
 
 | Workflow | Déclencheurs | Effet |
 |---|---|---|
-| **Follow** | `fec`, `⌥⌘,` (dans Wavebox) | copie le lien de l'onglet actif — message Slack survolé, mail (précédé de son auteur) ou page ; `Cmd+V` pour le coller |
+| **Follow** | `fel`, `⌥⌘,` (dans Wavebox) | copie le lien de l'onglet actif — message Slack survolé, mail (précédé de son auteur) ou page ; `Cmd+V` pour le coller |
 | | `::mp` | colle ce même lien au curseur — message Slack non : tapé ailleurs, Slack perd le survol (utiliser `⌥⌘,`) |
 | | `fe <jours> <prio> <action>` | tâche de suivi pour l'onglet actif : message Slack survolé, conversation Gmail ou page |
-| | `fes` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
-| | `fer` | résout les suivis de l'onglet actif et archive le mail |
+| | `fe?` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
+| | `fex [libellé]` | résout les suivis de l'onglet actif (libellé ajouté à l'historique) et archive le mail |
+| | `fe- [libellé]` | annule les suivis de l'onglet actif (libellé ajouté à l'historique) et archive le mail |
 | | `feg`, Hyper+`A` | range la note de suivi (tranches, pastilles, récapitulatif) et l'ouvre |
 | **Wavebox Tabs** | Hyper+`M`/`S`/`W`/`C`, Hyper+`N` | onglet Gmail/Slack/WhatsApp/Agenda (onglet suivant du même service s'il est déjà actif), NotePlan |
 | **Paste** | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
 | *Gmail Searches* | `gmg` | recherches Gmail prédéfinies — workflow personnel sans code, hors dépôt |
 
-Mots-clés en anglais derrière `fe` (*follow email*) : `c` *copy*, `s` *search*,
-`r` *resolve*, `g` *go*.
+Mots-clés derrière `fe` (*follow*), choisis pour se retenir sans traduire :
+`fex` et `fe-` reprennent ce qu'ils écrivent dans NotePlan (`[x]` résolue,
+`[-]` annulée), `fel` le *lien* / *link*, `fe?` la question « déjà suivi ? »,
+`feg` *go* (ouvrir la note). Chaque titre dans Alfred commence par son raccourci.
 
 Tâche de suivi : `- [ ] !!! 28/09/2026: Suivre @auteur [@: titre](url) >2026-09-30`
 — date de création, priorité et action optionnelles. Toutes vont dans la note
@@ -56,7 +59,7 @@ La note de suivi est commune à tous les canaux et créée si absente :
 ## Annulé                            tâches annulées en tête, sinon intacte
 ```
 
-Les deux premières sections sont rangées à chaque `fe`, `fer` et `feg` (après
+Les deux premières sections sont rangées à chaque `fe`, `fex` et `feg` (après
 une échéance changée à la main, `feg` suffit) : chaque tâche ouverte va dans la
 sous-section de sa tranche d'échéance, en jours calendaires (tranches vides
 omises, titres refaits à chaque fois, précédés d'une ligne vide) ; dans une tranche, `!!!` puis `!!` puis
@@ -97,16 +100,19 @@ pas de section. Plusieurs tâches le citent : la plus récemment créée. Le mes
 identifié par l'identifiant de conversation Gmail (`FMfcg…`, le même quels que
 soient le libellé et le compte `u/N` de l'URL), l'identifiant du message Slack
 (`p1700…`) ou, pour toute autre page, son URL complète ; c'est aussi ce que
-`fes` cherche dans NotePlan. Une URL n'est reconnue qu'à l'identique
+`fe?` cherche dans NotePlan. Une URL n'est reconnue qu'à l'identique
 (`…/a` ne trouve ni `…/abc` ni `…/a/b`) ; une liste Gmail n'identifie rien.
 
-**Résolution** (`fer`) : toutes les tâches ouvertes des sections rangées qui
-citent le message de l'onglet actif sont cochées et datées
-`@done(AAAA-MM-JJ HH:MM)` comme dans NotePlan ; le rangement les déplace avec
-leurs sous-lignes en tête de `## Terminé` (section créée en fin de note si
-absente).
-Aucune : un dialogue propose « Créer résolu » (tâche déjà cochée, pour la
-traçabilité) ou « Ne rien faire ». Sur une conversation Gmail, `fer` l'archive
+**Résolution et annulation** (`fex`, `fe-`) : toutes les tâches ouvertes des
+sections rangées qui citent le message de l'onglet actif sont cochées et datées
+`@done(AAAA-MM-JJ HH:MM)` comme dans NotePlan (`fex`), ou annulées `[-]`
+(`fe-`) ; le libellé saisi (`fex réglé par tél.`) est ajouté à l'historique de
+la plus récente, comme un complément de `fe` (`jj/mm/aaaa: <libellé>` à la
+suite de sa dernière citation) ; le rangement les déplace avec leurs
+sous-lignes en tête de `## Terminé` ou de `## Annulé` (section créée en fin de
+note si absente). Aucune : un dialogue propose « Créer résolu » ou « Créer
+annulé » (tâche déjà fermée, avec le libellé, pour la traçabilité) ou « Ne rien
+faire ». Sur une conversation Gmail, `fex` et `fe-` l'archivent
 ensuite (bouton Archiver de la page), seulement si elle porte au moins un
 libellé à soi — pas un libellé système (boîte de réception, brouillons,
 envoyés, catégories…, en anglais ou en français), sauf s'il figure dans la
@@ -180,7 +186,7 @@ absolu** : modifier un `.js` agit immédiatement, sans réimport.
 `make pull` les recopie ici. Les icônes de Wavebox et NotePlan sont extraites des
 applications installées ; Slack, Gmail, WhatsApp, Agenda et le presse-papier
 de Paste sont des glyphes SVG dessinés dans le script. Une icône propre à un
-objet Alfred (ici `fec`, `⌥⌘,`, `::mp`, `fe`, `fes`, `fer`, `feg` et Hyper+`A` en Wavebox →
+objet Alfred (ici `fel`, `⌥⌘,`, `::mp`, `fe`, `fe?`, `fex`, `feg` et Hyper+`A` en Wavebox →
 NotePlan) est un fichier `<UID>.png` dans le
 dossier du workflow. `tools/icons.py preview <dossier>` produit un aperçu sans
 toucher à Alfred.

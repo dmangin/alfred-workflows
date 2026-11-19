@@ -16,7 +16,7 @@ const require = (() => {
 
 const dates = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortFollow, resolveFollow, completeFollow } = require('lib/follow');
+const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortFollow, closeFollow, completeFollow } = require('lib/follow');
 const gmail = require('lib/sources/gmail');
 const wavebox = require('lib/wavebox');
 const { buildMarkdown, messageKey } = require('lib/sources/slack');
@@ -261,7 +261,7 @@ eq('rangement + pastilles : retirées des tâches finies de Terminé et Annulé,
     '## Annulé\n- [-] 11/06/2026: 🟠 c >2026-06-12\n## Perso\n- [ ] 🔴 d >2026-01-01', { today })),
   '# W\n\n## À faire\n## En attente\n## Terminé\n- [x] 01/09/2026: b >2026-09-01 @done(2026-09-02 10:00)\n' +
     '## Annulé\n- [-] 11/06/2026: c >2026-06-12\n## Perso\n- [ ] 🔴 d >2026-01-01');
-// --- résolution (fer) ---------------------------------------------------------
+// --- résolution (fex) ---------------------------------------------------------
 const now = D(2026, 11, 10, 9, 5);
 const toResolve = [
   '# W',
@@ -280,7 +280,7 @@ const toResolve = [
   '## Annulé',
   '- [-] annulé KEYRES0000000000)',
 ].join('\n');
-eq('résolution : toutes les tâches ouvertes des deux sections, sous-lignes, en tête de Terminé', resolveFollow(toResolve, 'KEYRES0000000000', now), {
+eq('résolution : toutes les tâches ouvertes des deux sections, sous-lignes, en tête de Terminé', closeFollow(toResolve, 'KEYRES0000000000', now), {
   content: [
     '# W',
     '',
@@ -309,20 +309,50 @@ eq('résolution : toutes les tâches ouvertes des deux sections, sous-lignes, en
   ].join('\n'),
   count: 3,
 });
-eq('résolution : absente, rien ne change', resolveFollow(toResolve, 'KEYNONE000000000', now), { content: toResolve, count: 0 });
-eq('résolution : clé préfixe ignorée', resolveFollow(toResolve, 'KEYRES000000000', now).count, 0);
+eq('résolution : absente, rien ne change', closeFollow(toResolve, 'KEYNONE000000000', now), { content: toResolve, count: 0 });
+eq('résolution : clé préfixe ignorée', closeFollow(toResolve, 'KEYRES000000000', now).count, 0);
 eq('résolution : créée résolue, section Terminé ajoutée',
-  body(resolveFollow('# W\n## À faire\n## En attente\n- [ ] 01/11/2026: Suivre a >2026-11-20\n\n',
-    'KEYNEW0000000000', now, '- [ ] 10/11/2026: Suivre @bob [@: y](https://mail.google.com/mail/u/0/#inbox/KEYNEW0000000000)').content),
+  body(closeFollow('# W\n## À faire\n## En attente\n- [ ] 01/11/2026: Suivre a >2026-11-20\n\n',
+    'KEYNEW0000000000', now, { newLine: '- [ ] 10/11/2026: Suivre @bob [@: y](https://mail.google.com/mail/u/0/#inbox/KEYNEW0000000000)' }).content),
   '# W\n\n## À faire\n## En attente\n### 🔵 En attente · plus tard\n- [ ] 01/11/2026: 🔵 Suivre a >2026-11-20\n\n## Terminé\n' +
     '- [x] 10/11/2026: Suivre @bob [@: y](https://mail.google.com/mail/u/0/#inbox/KEYNEW0000000000) @done(2026-11-10 09:05)\n');
 eq('résolution : dernière tâche, la ligne vide avant Terminé reste',
-  body(resolveFollow('# W\n## À faire\n## En attente\n- [ ] a >2026-12-01\n- [ ] b KEYEND0000000000 >2026-11-01\n\n## Terminé\n', 'KEYEND0000000000', now).content),
+  body(closeFollow('# W\n## À faire\n## En attente\n- [ ] a >2026-12-01\n- [ ] b KEYEND0000000000 >2026-11-01\n\n## Terminé\n', 'KEYEND0000000000', now).content),
   '# W\n\n## À faire\n## En attente\n### 🔵 En attente · plus tard\n- [ ] 🔵 a >2026-12-01\n\n## Terminé\n- [x] b KEYEND0000000000 >2026-11-01 @done(2026-11-10 09:05)\n');
 eq('résolution : dans une sous-section de tranche',
-  resolveFollow(tidy('# W\n## À faire\n## En attente\n- [ ] a KEYSUB0000000000 >2026-11-01'), 'KEYSUB0000000000', now).count, 1);
+  closeFollow(tidy('# W\n## À faire\n## En attente\n- [ ] a KEYSUB0000000000 >2026-11-01'), 'KEYSUB0000000000', now).count, 1);
+const tail = (r, n) => r.content.split('\n').slice(-n);
+eq('résolution avec libellé : entrée sur la plus récente, les autres seulement cochées',
+  tail(closeFollow(toResolve, 'KEYRES0000000000', now, { text: 'réglé' }), 10).slice(0, 6), [
+    '## Terminé',
+    '- [x] 05/11/2026: Relancer z KEYRES0000000000) >2026-10-31 @done(2026-11-10 09:05)',
+    '\t> 10/11/2026: réglé',
+    '- [x] 01/11/2026: Suivre a [@: x](https://mail.google.com/mail/u/0/#inbox/KEYRES0000000000) >2026-11-05 @done(2026-11-10 09:05)',
+    '\t> 04/11/2026: relancé',
+    '- [x] 01/10/2026: Suivre déjà fait KEYRES0000000000 >2026-10-02',
+  ]);
+eq('résolution avec libellé : à la suite de la citation existante',
+  tail(closeFollow('# W\n## À faire\n## En attente\n- [ ] 01/11/2026: a KEYHIS0000000000 >2026-11-05\n\t> 04/11/2026: relancé\n## Terminé',
+    'KEYHIS0000000000', now, { text: 'réglé' }), 2),
+  ['- [x] 01/11/2026: a KEYHIS0000000000 >2026-11-05 @done(2026-11-10 09:05)', '\t> 04/11/2026: relancé 10/11/2026: réglé']);
+eq('résolution : libellé vide ou blanc, pas d\'entrée',
+  closeFollow(toResolve, 'KEYRES0000000000', now, { text: '  ' }), closeFollow(toResolve, 'KEYRES0000000000', now));
+eq('annulation : annulées sans @done, en tête d\'Annulé avec leurs sous-lignes', tail(closeFollow(toResolve, 'KEYRES0000000000', now, { cancel: true }), 6), [
+  '## Annulé',
+  '- [-] 05/11/2026: Relancer z KEYRES0000000000) >2026-10-31',
+  '- [-] 01/11/2026: Suivre a [@: x](https://mail.google.com/mail/u/0/#inbox/KEYRES0000000000) >2026-11-05',
+  '\t> 04/11/2026: relancé',
+  '* [-] !! 03/11/2026: Suivre doublon KEYRES0000000000) >2026-11-12',
+  '- [-] annulé KEYRES0000000000)',
+]);
+eq('annulation : créée annulée avec son entrée en fin d\'À faire (le texte de tête reste), section Annulé ajoutée',
+  tail(closeFollow('# W\n## À faire\nintro\n## En attente\n## Terminé\n- [x] vieux', 'KEYNEW0000000000', now,
+    { cancel: true, text: 'plus d\'actualité', newLine: '- [ ] 10/11/2026: Suivre [@: y](u/KEYNEW0000000000)' }), 10), [
+    '## À faire', 'intro', '## En attente', '## Terminé', '- [x] vieux', '', '## Annulé',
+    '- [-] 10/11/2026: Suivre [@: y](u/KEYNEW0000000000)', '\t> 10/11/2026: plus d\'actualité', '',
+  ]);
 eq('résolution : hors sections rangées ignorée',
-  resolveFollow('# W\n## À faire\n## En attente\n## Perso\n- [ ] p KEYOUT0000000000)', 'KEYOUT0000000000', now).count, 0);
+  closeFollow('# W\n## À faire\n## En attente\n## Perso\n- [ ] p KEYOUT0000000000)', 'KEYOUT0000000000', now).count, 0);
 // --- complément (fe sur un message déjà suivi) -------------------------------
 eq('doublon : la plus récente si plusieurs',
   findOpenTask('- [ ] 01/10/2026: a KEYTWO\n- [ ] 05/10/2026: b KEYTWO\n- [ ] 03/10/2026: c KEYTWO\n- [ ] sans date KEYTWO', 'KEYTWO'),

@@ -99,6 +99,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>D7E5211C-4617-4FD9-9F0F-98DF2C712DC5</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>671E4423-2577-4D38-8C93-24F8D67B326B</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>E1F2A3B4-5C6D-4E7F-8A9B-0C1D2E3F4A5B</key>
 		<array>
 			<dict>
@@ -140,13 +153,13 @@
 			<key>config</key>
 			<dict>
 				<key>argumenttype</key>
-				<integer>2</integer>
+				<integer>1</integer>
 				<key>keyword</key>
-				<string>fer</string>
+				<string>fex</string>
 				<key>subtext</key>
-				<string>Résout les suivis de l’onglet actif (en tête de Terminé) et archive le mail</string>
+				<string>fex [libellé] — résout les suivis de l’onglet actif (libellé ajouté à leur historique), puis archive le mail</string>
 				<key>text</key>
-				<string>Follow : résolu</string>
+				<string>fex · Résoudre — [x]</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -165,7 +178,7 @@
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>script</key>
-				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" resolve</string>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" resolve "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -206,14 +219,37 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>/usr/bin/osascript -l JavaScript "/Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js" cancel "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>671E4423-2577-4D38-8C93-24F8D67B326B</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argumenttype</key>
 				<integer>2</integer>
 				<key>keyword</key>
-				<string>fes</string>
+				<string>fe?</string>
 				<key>subtext</key>
 				<string>Recherche dans NotePlan le message Slack survolé, le mail ou la page</string>
 				<key>text</key>
-				<string>Follow Status</string>
+				<string>fe? · Déjà suivi ?</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -290,9 +326,9 @@
 				<key>keyword</key>
 				<string>feg</string>
 				<key>subtext</key>
-				<string>Range la note de suivi (À faire, En attente), met à jour ses pastilles 🔵🟡🟠🔴⚪ et l’ouvre</string>
+				<string>Range la note de suivi (tranches d’échéance, pastilles, récapitulatif) et l’ouvre</string>
 				<key>text</key>
-				<string>Follow : note de suivi</string>
+				<string>feg · Note de suivi</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -353,9 +389,9 @@
 				<key>keyword</key>
 				<string>fe</string>
 				<key>subtext</key>
-				<string>fe &lt;jours&gt; &lt;priorité&gt; &lt;action&gt; — message Slack survolé, mail ou page ; sans action ou « Suivre … » : En attente, sinon À faire</string>
+				<string>fe &lt;jours&gt; &lt;priorité&gt; &lt;action&gt; — message Slack survolé, mail ou page ; sans action ou « Suivre … » : En attente, sinon À faire ; déjà suivi : complète la tâche</string>
 				<key>text</key>
-				<string>Follow</string>
+				<string>fe · Suivre / compléter</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -403,11 +439,11 @@
 				<key>argumenttype</key>
 				<integer>2</integer>
 				<key>keyword</key>
-				<string>fec</string>
+				<string>fel</string>
 				<key>subtext</key>
 				<string>Copie le lien de l’onglet actif : message Slack survolé, mail (avec son auteur) ou page</string>
 				<key>text</key>
-				<string>Follow : copier le lien</string>
+				<string>fel · Copier le lien</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -440,6 +476,27 @@
 			<string>D4E5F6A7-B8C9-4D0E-9F1A-2B3C4D5E6F70</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>keyword</key>
+				<string>fe-</string>
+				<key>subtext</key>
+				<string>fe- [libellé] — annule les suivis de l’onglet actif (libellé ajouté à leur historique), puis archive le mail</string>
+				<key>text</key>
+				<string>fe- · Annuler — [-]</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>D7E5211C-4617-4FD9-9F0F-98DF2C712DC5</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -515,6 +572,13 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<key>ypos</key>
 			<real>270.0</real>
 		</dict>
+		<key>671E4423-2577-4D38-8C93-24F8D67B326B</key>
+		<dict>
+			<key>xpos</key>
+			<real>230.0</real>
+			<key>ypos</key>
+			<real>990.0</real>
+		</dict>
 		<key>7E3F4A5B-8C9D-4E0F-9A1B-3C4D5E6F7A83</key>
 		<dict>
 			<key>xpos</key>
@@ -586,6 +650,13 @@ Scripts : /Users/dmangin/dev/utils/2609-alfred-jxa/workflows/follow/follow.js (r
 			<real>230.0</real>
 			<key>ypos</key>
 			<real>30.0</real>
+		</dict>
+		<key>D7E5211C-4617-4FD9-9F0F-98DF2C712DC5</key>
+		<dict>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>990.0</real>
 		</dict>
 		<key>E1F2A3B4-5C6D-4E7F-8A9B-0C1D2E3F4A5B</key>
 		<dict>
