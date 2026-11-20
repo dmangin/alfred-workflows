@@ -251,6 +251,12 @@ eq('pastille : retirée si cochée et sans échéance', markTask('- [x] ⚪ Suiv
 eq('pastille : retirée si cochée', markTask('- [x] 28/10/2026: 🔴 Suivre >2026-10-01', today), '- [x] 28/10/2026: Suivre >2026-10-01');
 eq('pastille : retirée si annulée', markTask('- [-] 🟠 Suivre >2026-11-05', today), '- [-] Suivre >2026-11-05');
 eq('pastille : sans date de création', markTask('* [ ] !! Suivre >2026-11-05', today), '* [ ] !! 🟠 Suivre >2026-11-05');
+eq('pastille : >today, violette', markTask('- [ ] 28/10/2026: ⚪ Suivre >today', today), '- [ ] 28/10/2026: 🟣 Suivre >today');
+eq('pastille : >todayx n\'est pas une échéance', markTask('- [ ] Suivre >todayx', today), '- [ ] ⚪ Suivre >todayx');
+eq('pastille : >today après une date, aujourd\'hui', markTask('- [ ] Suivre >2026-10-01 >today', today), '- [ ] 🟣 Suivre >2026-10-01 >today');
+eq('rangement : >today dans « aujourd\'hui », avant J+1, texte gardé',
+  body(sortFollow('# W\n## À faire\n- [ ] b >2026-11-10\n- [ ] a >today\n- [ ] c\n## En attente', { today })).split('\n').slice(3, 6),
+  ['### 🟣 À faire · aujourd\'hui', '- [ ] 🟣 a >today', '']);
 eq('pastille : idempotente', markTask(markTask('- [ ] 01/11/2026: a >2026-11-05', today), today), '- [ ] 01/11/2026: 🟠 a >2026-11-05');
 eq('rangement + pastilles : sections rangées seulement, sous-tâche indentée suivie',
   body(sortFollow('# W\n## À faire\n## En attente\n- [ ] 01/10/2026: a >2026-10-01\n\t- [ ] sous-tâche >2026-10-01\n## Terminé\n- [ ] 01/09/2026: b >2026-09-01',
@@ -448,6 +454,9 @@ eq('complément : dernière sous-ligne pas une citation, nouvelle sous-ligne',
 eq('complément : échéance après un retour doux sur la ligne de la tâche',
   completeFollow('# S\n## À faire\n- [ ] a KEYSOFT000000000) suite >2026-11-01\n## En attente', 'KEYSOFT000000000',
     { text: '', prio: '', days: 1, waitingDays: 2, now }).content.includes('KEYSOFT000000000) suite >2026-11-11\n\t> 10/11/2026: relance'), true);
+eq('complément : >today remplacée par la nouvelle échéance',
+  completeFollow('# S\n## À faire\n- [ ] a KEYTODAY00000000) >today\n## En attente', 'KEYTODAY00000000',
+    { text: '', prio: '', days: 1, waitingDays: 2, now }).content.includes('KEYTODAY00000000) >2026-11-11\n'), true);
 eq('rangement : échéance = dernier >date, retour doux compris',
   body(tidy('# S\n## À faire\n## En attente\n- [ ] a >2026-11-20 puis >2026-11-01')).split('\n').slice(4, 5), ['### 🔴 En attente · retard > 7 j']);
 const L = (name, inNav = false) => ({ name, inNav });

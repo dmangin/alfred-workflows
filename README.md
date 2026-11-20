@@ -61,7 +61,8 @@ La note de suivi est commune à tous les canaux et créée si absente :
 
 Les deux premières sections sont rangées à chaque `fe`, `fex` et `feg` (après
 une échéance changée à la main, `feg` suffit) : chaque tâche ouverte va dans la
-sous-section de sa tranche d'échéance, en jours calendaires (tranches vides
+sous-section de sa tranche d'échéance, en jours calendaires (`>today` compte
+pour aujourd'hui ; tranches vides
 omises, titres refaits à chaque fois, précédés d'une ligne vide) ; dans une tranche, `!!!` puis `!!` puis
 `!` puis le reste, et à priorité égale l'échéance puis la création les plus
 anciennes d'abord. Une tâche emporte les lignes qui la suivent (sous-lignes

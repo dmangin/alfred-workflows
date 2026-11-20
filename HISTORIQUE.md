@@ -218,6 +218,15 @@ sa version de l'éditeur. Essai à blanc sur la note réelle : aucune ligne de t
 ajoutée (hors pastilles, titres et récapitulatif), aucune tâche finie restée dans les
 sections rangées, second rangement sans effet.
 
+**Échéance `>today` (20/11/2026)** : NotePlan connaît une date spéciale,
+`>today`, qui remonte la tâche chaque jour jusqu'à ce qu'elle soit fermée. Le
+rangement ne lisait que `>AAAA-MM-JJ` et reléguait ces tâches en « sans
+échéance ». Elles vont désormais dans « aujourd'hui » (pastille 🟣), texte
+`>today` gardé, et la dernière échéance de la ligne compte toujours, qu'elle
+soit une date ou `>today`. `fe` sur une tâche existante remplace `>today` par
+la nouvelle échéance, au lieu d'en ajouter une seconde. Essai à blanc sur la
+note réelle : la tâche concernée passe dans « 🟣 À faire · aujourd'hui ».
+
 **Archivage de Terminé et Annulé (20/11/2026)** : `## Terminé` dépassait 180
 tâches et `## Annulé` 60, les tâches finies d'une ancienne note de suivi y
 ayant été rapatriées (ses tâches actives déplacées dans les sections rangées
