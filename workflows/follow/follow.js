@@ -7,7 +7,8 @@
 //   status              recherche NotePlan sur l'onglet actif : déjà suivi ?  (keyword fe?)
 //   resolve [libellé]   résout ses suivis ouverts et archive le mail  (keyword fex)
 //   cancel [libellé]    annule ses suivis ouverts et archive le mail  (keyword fe-)
-//   open                range la note de suivi et l'ouvre  (keyword feg, Hyper+A)
+//   open                range la note de suivi, archive ses vieilles tâches
+//                       fermées et l'ouvre  (keyword feg, Hyper+A)
 // <args> = « <jours ouvrés> <priorité> <action> », tout optionnel : « 2 !!! voir XX ».
 // Toutes les tâches vont dans la note de suivi (« Suivi »), rangées par tranche
 // d'échéance et priorité, pastilles 🔴🟠🟣🟡🔵⚪ et récapitulatif à jour : action vide
@@ -29,7 +30,8 @@ const require = (() => {
 const { app, env, main, UserError } = require('lib/alfred');
 const { addWorkingDays, frDate } = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { TODO, WAITING, parseFollowArgs, planTask, followTaskLine, sortFollow, closeFollow, completeFollow } = require('lib/follow');
+const { TODO, WAITING, parseFollowArgs, planTask, followTaskLine, sortFollow, closeFollow, completeFollow,
+  archiveTitle, archiveFollow, mergeArchive } = require('lib/follow');
 const { currentItem } = require('lib/sources/current');
 const gmail = require('lib/sources/gmail');
 
@@ -137,6 +139,25 @@ function close(ui, c, { author, link, key, tab }, text, cancel, dryRun) {
   return done;
 }
 
+// Ajout des tâches archivées `items` de l'année `year` à leur note d'archives,
+// créée sans l'ouvrir si absente, puis relue : tant qu'elle n'est pas écrite à
+// l'identique, la note de suivi ne bouge pas (rien de perdu ; mergeArchive
+// ignore ce qui y est déjà si l'archivage est relancé).
+function archive(c, { year, items }, dryRun) {
+  const title = archiveTitle(c.note, year);
+  const current = noteplan.readNote(title);
+  const next = mergeArchive(current, title, items);
+  if (dryRun) return (current === null ? 'création' : 'writeNote') + ' « ' + title + ' » (' + items.length + ')\n' + next;
+  if (current === null) {
+    app.openLocation(noteplan.addNoteUrl({ title, text: '', open: false }));
+    for (let i = 0; i < 25 && noteplan.readNote(title) === null; i++) delay(0.2);
+  }
+  if (next !== current && !noteplan.writeNote(title, next)) {
+    throw new UserError('Archivage impossible : « ' + title + ' » n’a pas pu être écrite, « ' + c.note + ' » est inchangée.');
+  }
+  return title;
+}
+
 // Comme dans une tâche fe : l'auteur d'un mail devant son lien.
 function currentLink(c) {
   const { author, link } = currentItem(c.browser, c.aliases);
@@ -182,10 +203,19 @@ function run(argv) {
         if (content === null) {
           throw new UserError('La note « ' + c.note + ' » n’existe pas encore : le premier fe la créera.');
         }
-        const tidy = sortFollow(content, { today: new Date() });
-        if (dryRun) return (tidy === content ? 'inchangée' : 'writeNote') + ' + ' + url + '\n' + tidy;
+        const now = new Date();
+        const { content: tidy, archives } = archiveFollow(sortFollow(content, { today: now }), now);
+        const written = archives.map((a) => archive(c, a, dryRun));
+        if (dryRun) return written.concat((tidy === content ? 'inchangée' : 'writeNote') + ' + ' + url + '\n' + tidy).join('\n\n');
+        // writeNote rend la main une fois l'écriture digérée par NotePlan : la
+        // note s'ouvre à jour, sans se redessiner sous les yeux.
         if (tidy !== content) noteplan.writeNote(c.note, tidy);
         app.openLocation(url);
+        if (archives.length) {
+          const n = archives.reduce((s, a) => s + a.items.length, 0);
+          ui.notify((n > 1 ? n + ' tâches fermées archivées' : '1 tâche fermée archivée') + ' dans « ' +
+            archives.map((a) => archiveTitle(c.note, a.year)).join(' », « ') + ' ».');
+        }
         return url;
       }
       default:

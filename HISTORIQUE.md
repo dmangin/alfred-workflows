@@ -218,6 +218,42 @@ sa version de l'éditeur. Essai à blanc sur la note réelle : aucune ligne de t
 ajoutée (hors pastilles, titres et récapitulatif), aucune tâche finie restée dans les
 sections rangées, second rangement sans effet.
 
+**Archivage de Terminé et Annulé (20/11/2026)** : `## Terminé` dépassait 180
+tâches et `## Annulé` 60, les tâches finies d'une ancienne note de suivi y
+ayant été rapatriées (ses tâches actives déplacées dans les sections rangées
+selon la règle de `fe`, essai à blanc vérifié : aucune ligne perdue,
+sous-lignes attachées). Choix de Damien :
+
+| Sujet | Choix | Pourquoi |
+|---|---|---|
+| Terminé | gardées 7 jours après leur `@done` | la semaine écoulée reste sous la main |
+| Annulé | les 10 premières gardées, pas de délai | idée de Damien : une annulation n'est pas datée (ni par NotePlan ni par `fe-`), mais arrive toujours en tête de la section |
+| Destination | une note par année, `Suivi — Archives AAAA`, `## mois` le plus récent en tête, terminées et annulées mêlées | notes de taille raisonnable, recherche NotePlan intacte |
+| Date d'une annulée | jour d'archivage (mois et année de rangement) | préférée à la dernière date écrite dans la tâche ; les 50 anciennes vont donc toutes en novembre 2026 |
+| Dossier | à côté de la note de suivi | création par URL testée, immédiate ; déplaçables ensuite |
+| Quand | à chaque `feg` | `feg` range déjà ; `fe`, `fex`, `fe-` n'écrivent toujours qu'une note |
+
+Testé avant de coder : l'événement Apple d'écriture ne crée pas une note
+absente (sans erreur), l'URL `addNote` avec `openNote=no` la crée tout de
+suite, à la racine des notes, sans l'ouvrir. Les archives sont écrites puis
+relues avant la note de suivi ; une tâche déjà présente dans l'archive n'est
+pas recopiée, si une écriture de la note de suivi était perdue (éditeur
+ouvert). Essai à blanc sur la note réelle : 192 tâches archivées dans cinq
+notes (2021 à 2026), 41 terminées et 10 annulées restent, aucune ligne perdue
+ni dupliquée.
+
+Premier vrai `feg` : la note s'est affichée en se redessinant sous les yeux.
+Le calcul se fait pourtant en mémoire et chaque note est remplacée d'un seul
+coup, et la note n'était ouverte qu'après. Mesures sur une note de test au
+contenu de Suivi : l'écriture rend la main en 0,1 à 0,4 s, mais NotePlan reste
+occupé jusqu'à 1,8 s ensuite (une lecture lancée juste après attend
+d'autant), que la note soit affichée ou non ; la création par URL, elle,
+n'active pas NotePlan. `writeNote` relit donc désormais la note après
+l'avoir écrite : la lecture n'aboutit qu'une fois l'écriture digérée, et la
+note s'ouvre ensuite à jour (valable pour `fe`, `fex`, `fe-`, `feg`). Le
+premier passage était exceptionnel (192 tâches, cinq notes créées) : ensuite,
+chaque `feg` n'archive que les tâches qui viennent de passer les 7 jours.
+
 **Raccourcis mnémotechniques (19/11/2026)** : à l'usage, les mots-clés ne se
 retenaient pas — chaque lettre évoquait autre chose à Damien : `fes` « solve »,
 `fec` « cancel », `fed` « done », `fer` un mot français, et « resolve » ou

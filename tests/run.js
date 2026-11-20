@@ -16,7 +16,8 @@ const require = (() => {
 
 const dates = require('lib/dates');
 const noteplan = require('lib/noteplan');
-const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortFollow, closeFollow, completeFollow } = require('lib/follow');
+const { parseFollowArgs, isWaiting, planTask, followTaskLine, findOpenTask, dueBadge, markTask, sortFollow, closeFollow, completeFollow,
+  archiveTitle, archiveFollow, mergeArchive } = require('lib/follow');
 const gmail = require('lib/sources/gmail');
 const wavebox = require('lib/wavebox');
 const { buildMarkdown, messageKey } = require('lib/sources/slack');
@@ -353,6 +354,54 @@ eq('annulation : créée annulée avec son entrée en fin d\'À faire (le texte 
   ]);
 eq('résolution : hors sections rangées ignorée',
   closeFollow('# W\n## À faire\n## En attente\n## Perso\n- [ ] p KEYOUT0000000000)', 'KEYOUT0000000000', now).count, 0);
+// --- archivage (feg) -----------------------------------------------------------
+const archDay = D(2026, 11, 20, 10);
+const cancelledN = (n) => Array.from({ length: n }, (_, i) => '- [-] annulée ' + (i + 1));
+const toArchive = [
+  '# Suivi',
+  '## À faire',
+  '- [ ] a >2026-11-25',
+  '## Terminé',
+  'note perso',
+  '- [x] récente @done(2026-11-13 09:00)',
+  '- [x] vieille @done(2026-11-12 18:30)',
+  '\t> 05/11/2026: relance  10/11/2026: ok',
+  '\t- [ ] sous-tâche',
+  '- [x] sans date',
+  '- [x] 2025 @done(2025-12-31 08:00)',
+  '- [-] égarée',
+  '',
+  '## Annulé',
+].concat(cancelledN(12), ['\t> sous-ligne de 12', '']);
+const arch = archiveFollow(toArchive.join('\n'), archDay);
+eq('archivage : Terminé garde les cochées de 7 j au plus, Annulé ses 10 premières', arch.content.split('\n'), [
+  '# Suivi', '## À faire', '- [ ] a >2026-11-25', '## Terminé', 'note perso',
+  '- [x] récente @done(2026-11-13 09:00)', '- [-] égarée', '', '## Annulé',
+].concat(cancelledN(10), ['']));
+eq('archivage : par année décroissante, sous-lignes emportées, dates', arch.archives, [
+  { year: '2026', items: [
+    { date: '2026-11-12 18:30', lines: ['- [x] vieille @done(2026-11-12 18:30)', '\t> 05/11/2026: relance  10/11/2026: ok', '\t- [ ] sous-tâche'] },
+    { date: '2026-11-20', lines: ['- [x] sans date'] },
+    { date: '2026-11-20', lines: ['- [-] annulée 11'] },
+    { date: '2026-11-20', lines: ['- [-] annulée 12', '\t> sous-ligne de 12'] },
+  ] },
+  { year: '2025', items: [{ date: '2025-12-31 08:00', lines: ['- [x] 2025 @done(2025-12-31 08:00)'] }] },
+]);
+eq('archivage : rien à archiver, note inchangée', archiveFollow(arch.content, archDay), { content: arch.content, archives: [] });
+eq('archivage : sans sections fermées', archiveFollow('# Suivi\n## À faire\n', archDay), { content: '# Suivi\n## À faire\n', archives: [] });
+eq('archives : titre', archiveTitle('Suivi', '2026'), 'Suivi — Archives 2026');
+const A26 = 'Suivi — Archives 2026';
+const it = (date, ...lines) => ({ date, lines });
+eq('archives : création, mois récents en tête, plus récentes en tête',
+  mergeArchive(null, A26, [it('2026-10-02 08:00', '- [x] oct'), it('2026-11-03', '- [-] nov 3'), it('2026-11-12 18:30', '- [x] nov 12', '\t> sous')]),
+  '# Suivi — Archives 2026\n\n## novembre 2026\n- [x] nov 12\n\t> sous\n- [-] nov 3\n\n## octobre 2026\n- [x] oct\n');
+const arch26 = '# Suivi — Archives 2026\n\n## novembre 2026\n- [x] nov 12\n\n## septembre 2026\n- [x] sept\n';
+eq('archives : ajout en tête d\'un mois existant, mois manquant à sa place, mois plus ancien en fin',
+  mergeArchive(arch26, A26, [it('2026-11-20', '- [-] nov 20'), it('2026-10-01', '- [x] oct'), it('2026-08-31', '- [x] août')]),
+  '# Suivi — Archives 2026\n\n## novembre 2026\n- [-] nov 20\n- [x] nov 12\n\n## octobre 2026\n- [x] oct\n\n## septembre 2026\n- [x] sept\n\n## août 2026\n- [x] août\n');
+eq('archives : tâche déjà archivée non recopiée', mergeArchive(arch26, A26, [it('2026-11-12 18:30', '- [x] nov 12')]), arch26);
+eq('archives : ce que tu as ajouté reste', mergeArchive('# Suivi — Archives 2026\nintro', A26, [it('2026-11-01', '- [-] x')]),
+  '# Suivi — Archives 2026\nintro\n\n## novembre 2026\n- [-] x\n');
 // --- complément (fe sur un message déjà suivi) -------------------------------
 eq('doublon : la plus récente si plusieurs',
   findOpenTask('- [ ] 01/10/2026: a KEYTWO\n- [ ] 05/10/2026: b KEYTWO\n- [ ] 03/10/2026: c KEYTWO\n- [ ] sans date KEYTWO', 'KEYTWO'),

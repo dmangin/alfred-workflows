@@ -14,7 +14,7 @@ lib partagée et testée.
 | | `fe?` | recherche NotePlan sur l'onglet actif : déjà suivi ? |
 | | `fex [libellé]` | résout les suivis de l'onglet actif (libellé ajouté à l'historique) et archive le mail |
 | | `fe- [libellé]` | annule les suivis de l'onglet actif (libellé ajouté à l'historique) et archive le mail |
-| | `feg`, Hyper+`A` | range la note de suivi (tranches, pastilles, récapitulatif) et l'ouvre |
+| | `feg`, Hyper+`A` | range la note de suivi (tranches, pastilles, récapitulatif), archive ses vieilles tâches fermées et l'ouvre |
 | **Wavebox Tabs** | Hyper+`M`/`S`/`W`/`C`, Hyper+`N` | onglet Gmail/Slack/WhatsApp/Agenda (onglet suivant du même service s'il est déjà actif), NotePlan |
 | **Paste** | `sdn` puis N, `sd2d`…`sd6d` | colle la date `AAAA-MM-JJ` à J+N jours ouvrés |
 | *Gmail Searches* | `gmg` | recherches Gmail prédéfinies — workflow personnel sans code, hors dépôt |
@@ -55,8 +55,8 @@ La note de suivi est commune à tous les canaux et créée si absente :
 ### 🔵 À faire · plus tard
 ### ⚪ À faire · sans échéance
 ## En attente                        mêmes tranches (« En attente · … »)
-## Terminé                           tâches finies en tête, sinon intacte
-## Annulé                            tâches annulées en tête, sinon intacte
+## Terminé                           tâches finies en tête ; archivées après 7 jours
+## Annulé                            tâches annulées en tête ; 10 gardées, le reste archivé
 ```
 
 Les deux premières sections sont rangées à chaque `fe`, `fex` et `feg` (après
@@ -85,6 +85,20 @@ archivée par NotePlan dans `## Terminé` ou `## Annulé` avant un rangement per
 la sienne au suivant). Une tâche planifiée `>date` reste visible dans la note du jour de son
 échéance (références de NotePlan).
 NotePlan fermé, `feg` ouvre la note sans la toucher.
+
+**Archivage** (`feg`) : les tâches fermées quittent la note, avec leurs
+sous-lignes, pour `Suivi — Archives AAAA` (une note par année, créée à côté de
+la note de suivi si absente). `## Terminé` garde les tâches cochées depuis 7
+jours au plus, d'après leur `@done` (une cochée sans `@done` part, datée du
+jour) ; `## Annulé` garde ses 10 premières tâches — les plus récentes, les
+annulées y arrivant en tête — et les suivantes partent datées du jour
+d'archivage, NotePlan ne datant pas une annulation. Le reste de ces sections
+ne bouge pas. Dans une note d'archives, une section `## novembre 2026` par
+mois, la plus récente en tête, et dans chaque mois les dernières arrivées en
+tête, de la plus récente à la plus ancienne ; ce que tu y ajoutes reste. Les
+archives sont écrites et relues avant la note de suivi : en cas d'échec, la
+note de suivi reste telle quelle, et une tâche déjà archivée n'est pas
+recopiée au passage suivant. Une notification compte les tâches archivées.
 
 **Message déjà suivi** (`fe` alors qu'une tâche ouverte de la note le cite) :
 un dialogue « Déjà suivi depuis le … » propose de **compléter** sa tâche (↩)
