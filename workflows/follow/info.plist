@@ -326,7 +326,7 @@
 				<key>keyword</key>
 				<string>feg</string>
 				<key>subtext</key>
-				<string>Range la note de suivi (tranches d’échéance, pastilles, récapitulatif) et l’ouvre</string>
+				<string>Range la note de suivi (tranches d’échéance, pastilles, récapitulatif), archive ses vieilles tâches fermées et l’ouvre</string>
 				<key>text</key>
 				<string>feg · Note de suivi</string>
 				<key>withspace</key>
